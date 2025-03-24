@@ -21,7 +21,7 @@ Analyze this video recording and provide a detailed description of:
 
 Structure your response as a JSON object with the following fields:
 {
-  "summary": "Brief summary of the video",
+  "summary": "Detailed summary of the video",
   "screenContent": "Description of what's visible on the screen",
   "actions": "Description of actions performed",
   "topics": ["topic1", "topic2"],
