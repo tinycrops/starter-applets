@@ -43,7 +43,7 @@ This application watches a folder for new video recordings from OBS, sends them 
 
 4. The application will automatically detect the new video, send it to Gemini for analysis, and add it to the dataset
 
-5. Open your browser to http://localhost:8000 to view the web interface
+5. Open your browser to http://localhost:8001 to view the web interface
 
 ## How It Works
 

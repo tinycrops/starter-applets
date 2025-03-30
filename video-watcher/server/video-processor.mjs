@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
+import { extractCommandsPreferences, addEventToStm } from './memory-manager.mjs';
 
 // Initialize Gemini AI - using the same approach as video folder project
 const key = process.env.VITE_GEMINI_API_KEY;
@@ -141,6 +142,35 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
       }
       
       const parsedResponse = JSON.parse(jsonStr);
+
+      // NEW: If we have a transcript, extract commands and preferences
+      if (parsedResponse.transcript && parsedResponse.transcript.trim().length > 0) {
+        try {
+          console.log("Transcript found, extracting commands and preferences...");
+          const commandsPreferences = await extractCommandsPreferences(parsedResponse.transcript);
+          
+          // Add to the response
+          parsedResponse.commands_preferences = commandsPreferences;
+          
+          // Also add to short-term memory
+          await addEventToStm({
+            type: 'video_transcript_analysis',
+            data: {
+              videoFileName: path.basename(filePath),
+              transcript: parsedResponse.transcript,
+              commandsPreferences: commandsPreferences
+            }
+          });
+          
+          console.log("Commands and preferences extracted and added to memory.");
+        } catch (extractError) {
+          console.error("Error extracting commands/preferences:", extractError);
+          // Continue with the rest of the function even if this part fails
+        }
+      } else {
+        console.log("No transcript found or transcript empty, skipping command/preference extraction.");
+      }
+      
       return {
         ...parsedResponse,
         text: responseText,
@@ -202,6 +232,23 @@ export async function saveToDataset(videoPath, analysisResult, datasetFolder) {
       JSON.stringify(datasetEntry, null, 2), 
       'utf-8'
     );
+    
+    // NEW: Add the analysis completion event to short-term memory
+    try {
+      await addEventToStm({
+        type: 'video_analysis_complete',
+        data: {
+          videoFileName: videoFileName,
+          analysisId: datasetEntry.id,
+          timestamp: timestamp,
+          summary: analysisResult.summary || "No summary available",
+          topics: analysisResult.topics || []
+        }
+      });
+    } catch (memoryError) {
+      console.error("Error adding analysis to memory (non-critical):", memoryError);
+      // Continue even if memory update fails
+    }
     
     return {
       success: true,

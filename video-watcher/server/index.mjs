@@ -5,6 +5,7 @@ import path from 'path';
 import chokidar from 'chokidar';
 import { fileURLToPath } from 'url';
 import { analyzeVideo, saveToDataset } from './video-processor.mjs';
+import { initializeMemoryManager, getMemoryState } from './memory-manager.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -100,6 +101,20 @@ app.get('/api/status', (req, res) => {
     datasetFolder: DATASET_FOLDER,
     processedCount: processedVideos.size
   });
+});
+
+// NEW: Add API endpoint to access memory
+app.get('/api/memory', (req, res) => {
+  try {
+    const memoryState = getMemoryState();
+    res.json({
+      success: true,
+      memory: memoryState
+    });
+  } catch (error) {
+    console.error('Error accessing memory state:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // New endpoint to manually process a video
@@ -217,6 +232,20 @@ async function scanForMissedVideos() {
 async function setupWatcher() {
   await ensureDirectoryExists(DATASET_FOLDER);
   await loadProcessedVideos();
+  
+  // NEW: Initialize memory manager
+  try {
+    const apiKey = process.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("WARNING: Missing VITE_GEMINI_API_KEY environment variable. Memory manager will not be initialized.");
+    } else {
+      await initializeMemoryManager(apiKey);
+      console.log("Memory manager initialized successfully.");
+    }
+  } catch (error) {
+    console.error("Error initializing memory manager:", error);
+    // Continue with the rest of the startup process
+  }
   
   // Scan for missed videos on startup
   await scanForMissedVideos();
