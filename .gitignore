@@ -1,1 +1,5 @@
 .env
+ltm.json
+memory-state.json
+stm.json
+wm.json
