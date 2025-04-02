@@ -4,9 +4,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Constants for memory management
 const MEMORY_DIR = path.join(process.cwd(), 'memory');
-const STM_TOKEN_LIMIT = 1000;
-const LTM_TOKEN_LIMIT = 3000;
-const WM_TOKEN_LIMIT = 3000;
+const STM_TOKEN_LIMIT = 8000;
+const LTM_TOKEN_LIMIT = 8000;
+const WM_TOKEN_LIMIT = 8000;
 const DEFAULT_MODEL = 'gemini-2.0-flash';
 const SUMMARY_MODEL = 'gemini-2.5-pro-exp-03-25'
 const MEMORY_STATE_FILE = path.join(MEMORY_DIR, 'memory-state.json');
