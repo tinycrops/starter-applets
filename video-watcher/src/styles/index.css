@@ -81,4 +81,94 @@ button:focus-visible {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
+}
+
+/* Tabs styling */
+.tabs {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.tabs button {
+  margin-right: 0.5rem;
+  border-radius: 4px 4px 0 0;
+  padding: 0.5rem 1rem;
+}
+
+.tabs button.active {
+  background-color: #333;
+  border-bottom: 2px solid #646cff;
+}
+
+/* Memory Portal styling */
+.memory-portal h2 {
+  margin-bottom: 1rem;
+}
+
+.memory-form {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+.memory-input {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.memory-submit {
+  margin-left: 0.5rem;
+  background-color: #646cff;
+  color: white;
+}
+
+.memory-submit:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+}
+
+.memory-response {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  border-left: 3px solid #646cff;
+}
+
+.memory-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1rem;
+}
+
+.memory-state details {
+  margin: 0.5rem 0;
+}
+
+.memory-state summary {
+  cursor: pointer;
+  padding: 0.5rem;
+  background-color: #333;
+  border-radius: 4px;
+}
+
+.memory-state ul {
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.memory-state li {
+  margin-bottom: 0.25rem;
+}
+
+.memory-json {
+  background-color: #2c2c2c;
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow: auto;
+  font-size: 0.8rem;
+  max-height: 200px;
 } 

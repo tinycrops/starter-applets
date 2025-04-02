@@ -4,7 +4,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Constants for memory management
 const MEMORY_DIR = path.join(process.cwd(), 'memory');
-const STM_TOKEN_LIMIT = 8000;
+const STM_TOKEN_LIMIT = 1000;
+const LTM_TOKEN_LIMIT = 3000;
+const WM_TOKEN_LIMIT = 3000;
 const DEFAULT_MODEL = 'gemini-2.0-flash';
 const SUMMARY_MODEL = 'gemini-2.5-pro-exp-03-25'
 const MEMORY_STATE_FILE = path.join(MEMORY_DIR, 'memory-state.json');
@@ -226,6 +228,9 @@ export class MemoryManager {
       // Update LTM with new summary
       this.longTermMemory = updatedLTM;
       
+      // Check LTM size and trim if needed
+      await this.checkLTMSize();
+      
       // Persist updated LTM
       await this.persistLTM();
       
@@ -245,110 +250,137 @@ export class MemoryManager {
   }
 
   /**
-   * Create LTM summary from STM entries using Gemini
-   * @param {Array} stmEntries - STM entries to summarize
-   * @returns {Object} - Updated LTM object
+   * Check and trim LTM if it exceeds token limit
    */
-  async createLTMSummary(stmEntries) {
+  async checkLTMSize() {
     try {
-      // Format STM entries for the prompt
-      const formattedSTMEntries = stmEntries.map(entry => {
-        return `[${entry.timestamp}] (${entry.type}): ${JSON.stringify(entry.data)}`;
-      }).join("\n");
+      const ltmString = JSON.stringify(this.longTermMemory);
+      const tokenCount = this.estimateTokens(ltmString);
       
-      // Comprehensive LTM summarization prompt with clear instructions and structure
+      console.log(`LTM size: ${tokenCount} tokens (limit: ${LTM_TOKEN_LIMIT})`);
+      
+      if (tokenCount > LTM_TOKEN_LIMIT) {
+        console.log('LTM exceeds token limit, trimming...');
+        await this.trimLTM(tokenCount);
+      }
+    } catch (error) {
+      console.error('Error checking LTM size:', error);
+    }
+  }
+
+  /**
+   * Trim LTM to stay within token limit
+   */
+  async trimLTM(currentTokenCount) {
+    try {
+      // Use Gemini to create a more concise summary
       const prompt = `
-Synthesize the following user activity log entries (which include explicit statements and inferred insights) into a concise, structured long-term memory profile. Focus on consolidating recurring themes, established facts, and significant patterns regarding the user's:
+The following is the current long-term memory for a user assistant that exceeds our token limit of ${LTM_TOKEN_LIMIT}.
+Current size: approximately ${currentTokenCount} tokens.
 
-* Skills & Knowledge (including gaps)
-* Preferences & Habits
-* Common Workflows & Tool Usage
-* Recurring Frustrations or Challenges
-* Inferred Goals & Motivations
-* Implicit Opinions or Attitudes
+Please condense this information to a more concise representation while preserving the most important insights.
+Focus on:
+1. Core user preferences and established patterns
+2. Most relevant skills, knowledge, and workflows
+3. Highest confidence insights and explicitly stated facts
 
-Preserve the nuance between explicitly stated facts and inferred observations where possible. This summary will be added to the user's persistent profile to inform a personalized AI assistant.
-
-Existing LTM:
+Current LTM:
 ---
 ${JSON.stringify(this.longTermMemory, null, 2)}
 ---
 
-New STM Entries to Summarize & Integrate:
----
-${formattedSTMEntries}
----
+Return a condensed version in the same JSON structure, but more concise and within our ${LTM_TOKEN_LIMIT} token limit.
+Ensure the output is a valid JSON object with the same structure.`;
 
-Guidelines for synthesis:
-1. Merge similar insights, prioritizing explicit statements over inferred ones when there's a conflict
-2. Note the confidence/certainty level when including inferences
-3. Build upon existing knowledge in the LTM, refining or correcting previous entries as needed
-4. Maintain a balance between specificity (concrete examples) and generalization (patterns)
-5. Preserve important contextual information that helps explain the user's behavior
-
-Output the *entire updated* LTM as a single, consolidated JSON object following this structure:
-{
-  "profile_summary": "Brief overview of the user",
-  "skills_and_knowledge": {
-    "confirmed_skills": [...],
-    "inferred_skills": [...],
-    "knowledge_gaps": [...]
-  },
-  "preferences_and_habits": {
-    "ui_preferences": [...],
-    "workflow_habits": [...],
-    "tool_preferences": [...]
-  },
-  "workflows": {
-    "common_tasks": [...],
-    "approaches": [...],
-    "frequency_patterns": [...]
-  },
-  "challenges": {
-    "recurring_frustrations": [...],
-    "difficulties": [...],
-    "blockers": [...]
-  },
-  "goals_and_motivations": {
-    "stated_goals": [...],
-    "inferred_goals": [...],
-    "motivations": [...]
-  },
-  "traits_and_attitudes": {
-    "communication_style": [...],
-    "decision_making": [...],
-    "learning_approach": [...]
-  }
-}
-
-Ensure the output is a valid JSON object with no trailing commas or syntax errors.`;
-
-      // Generate LTM summary using Gemini
       const model = genAI.getGenerativeModel({ model: SUMMARY_MODEL });
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
       
       try {
-        // Extract JSON from response (handles both raw JSON or markdown-wrapped JSON)
+        // Extract JSON from response
         let jsonStr = responseText;
         const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
         if (jsonMatch && jsonMatch[1]) {
           jsonStr = jsonMatch[1];
         }
         
-        const updatedLTM = JSON.parse(jsonStr);
-        console.log('Successfully created LTM summary');
-        return updatedLTM;
+        const trimmedLTM = JSON.parse(jsonStr);
+        const newTokenCount = this.estimateTokens(JSON.stringify(trimmedLTM));
+        
+        if (newTokenCount <= LTM_TOKEN_LIMIT) {
+          this.longTermMemory = trimmedLTM;
+          console.log(`Successfully trimmed LTM to ${newTokenCount} tokens`);
+        } else {
+          console.warn(`Trimmed LTM still exceeds token limit (${newTokenCount} tokens)`);
+          // Force additional trimming by removing less important categories
+          const priorityOrder = [
+            "profile_summary", 
+            "skills_and_knowledge.confirmed_skills",
+            "preferences_and_habits.ui_preferences",
+            "preferences_and_habits.tool_preferences",
+            "goals_and_motivations.stated_goals",
+            "challenges.recurring_frustrations"
+          ];
+          
+          // Keep trimming based on priority until we're under the limit
+          this.longTermMemory = this.forceTrimByPriority(trimmedLTM, priorityOrder);
+        }
       } catch (parseError) {
-        console.error('Error parsing LTM summary JSON:', parseError);
-        // If parsing fails, keep existing LTM and log the error
-        console.log('Raw LTM response:', responseText);
-        return this.longTermMemory;
+        console.error('Error parsing trimmed LTM JSON:', parseError);
+        // If parsing fails, we'll do a manual basic trimming
+        this.longTermMemory = this.basicTrimLTM();
       }
     } catch (error) {
-      console.error('Error creating LTM summary:', error);
-      return this.longTermMemory;
+      console.error('Error trimming LTM:', error);
+      // Fallback to basic trimming
+      this.longTermMemory = this.basicTrimLTM();
     }
+  }
+
+  /**
+   * Force trim LTM by keeping high priority elements
+   */
+  forceTrimByPriority(ltm, priorityOrder) {
+    // Deep clone to avoid modifying the original
+    const result = JSON.parse(JSON.stringify(ltm));
+    
+    // Start with only the prioritized fields
+    const trimmed = {};
+    priorityOrder.forEach(path => {
+      const parts = path.split('.');
+      if (parts.length === 1) {
+        if (result[parts[0]]) {
+          if (!trimmed[parts[0]]) trimmed[parts[0]] = result[parts[0]];
+        }
+      } else if (parts.length === 2) {
+        if (!trimmed[parts[0]]) trimmed[parts[0]] = {};
+        if (result[parts[0]] && result[parts[0]][parts[1]]) {
+          trimmed[parts[0]][parts[1]] = result[parts[0]][parts[1]]; 
+        }
+      }
+    });
+    
+    console.log('Created priority-based trimmed LTM');
+    return trimmed;
+  }
+
+  /**
+   * Basic trim LTM as a fallback
+   */
+  basicTrimLTM() {
+    // Simple fallback - keep only profile summary and most important categories
+    const basic = {
+      profile_summary: this.longTermMemory.profile_summary || "User profile",
+      skills_and_knowledge: {
+        confirmed_skills: this.longTermMemory.skills_and_knowledge?.confirmed_skills?.slice(0, 5) || []
+      },
+      preferences_and_habits: {
+        ui_preferences: this.longTermMemory.preferences_and_habits?.ui_preferences?.slice(0, 5) || []
+      }
+    };
+    
+    console.log('Created basic trimmed LTM due to errors in advanced trimming');
+    return basic;
   }
 
   /**
@@ -370,9 +402,11 @@ Ensure the output is a valid JSON object with no trailing commas or syntax error
         return `[${entry.timestamp}] (${entry.type}): ${JSON.stringify(entry.data)}`;
       }).join('\n');
       
-      // Working memory reasoning prompt with clear reasoning steps and explanation
+      // Improved working memory reasoning prompt
       const prompt = `
-Based on the recent activity log (STM - including explicit statements AND inferred insights), the long-term user profile (LTM), and the current Working Memory (WM), update the WM. The goal is to refine our understanding of the user's *current state, active goals, and immediate context*, including their potential mental state, unspoken needs, and opinions.
+You are an advanced cognitive model that builds a coherent user mental model by analyzing recent activity, long-term patterns, and current context.
+
+Your task is to update the Working Memory (WM) to reflect the user's current state, goals, needs, and context.
 
 Current WM:
 ---
@@ -389,50 +423,35 @@ LTM (Long-Term Profile):
 ${JSON.stringify(this.longTermMemory, null, 2)}
 ---
 
-Instructions:
+INSTRUCTIONS:
 
-1. ANALYZE recent STM entries (especially 'inferred_insights') in light of LTM and current WM.
+1. ANALYZE recent STM entries through the lens of existing LTM and current WM.
 
-2. GENERATE new 'untested_hypotheses' reflecting fresh observations about user state, intent, opinions, needs, confusion, etc.
-   - Focus on what's relevant to their CURRENT context
-   - Phrase as specific, testable statements
-   - Include hypotheses about immediate needs, mental state, and short-term goals
+2. Maintain these three categories in WM:
+   a) UNTESTED HYPOTHESES: Fresh observations that seem plausible but need more evidence
+   b) CORROBORATED HYPOTHESES: Observations with moderate support across multiple interactions
+   c) ESTABLISHED FACTS: Consistently supported observations or explicitly stated information
 
-3. REVIEW existing 'untested_hypotheses':
-   - If recent STM/LTM SUPPORTS a hypothesis, PROMOTE it to 'corroborated_hypotheses'
-   - If recent STM/LTM CONTRADICTS a hypothesis, REMOVE it
-   - If hypothesis is no longer relevant to current context, REMOVE it
-   - Otherwise, KEEP it in 'untested_hypotheses'
+3. For each hypothesis/fact, include:
+   - The specific insight written concisely but precisely
+   - The evidence basis in [brackets]
+   - Relevance to the user's current context/goals
+   
+4. Focus on what would help understand and assist the user RIGHT NOW.
 
-4. REVIEW existing 'corroborated_hypotheses':
-   - If CONSISTENTLY and STRONGLY supported over time, PROMOTE to 'established_facts'
-   - If recent activity raises DOUBTS, DEMOTE back to 'untested_hypotheses'
-   - If STRONGLY refuted, REMOVE it
-   - Otherwise, KEEP it in 'corroborated_hypotheses'
+5. Maintain cognitive hierarchy:
+   - PROMOTE untested hypotheses to corroborated when additional evidence appears
+   - PROMOTE corroborated hypotheses to facts when consistently supported
+   - DEMOTE or REMOVE when evidence contradicts
 
-5. Format each hypothesis/fact:
-   - Be CONCISE but SPECIFIC
-   - Include BASIS for belief (e.g., "User prefers dark mode [based on repeated UI selections]")
-   - Focus on ACTIONABLE insights (what would help the user NOW)
-   - Avoid redundancy with LTM and between lists
+The updated WM should prioritize insights that are:
+- Actionable (can inform immediate recommendations)
+- Context-aware (relevant to current session)
+- Specific (detailed enough to guide decisions)
+- Evidence-based (clearly linked to observations)
 
-Output the *entire updated* WM as a JSON object:
-{
-  "untested_hypotheses": [
-    "Hypothesis 1 [basis: observation X]",
-    "Hypothesis 2 [basis: inference from Y]"
-  ],
-  "corroborated_hypotheses": [
-    "Stronger hypothesis 1 [basis: consistent pattern Z]",
-    "Stronger hypothesis 2 [basis: multiple observations of A]"
-  ],
-  "established_facts": [
-    "Established fact 1 [basis: repeated confirmation of B]",
-    "Established fact 2 [basis: explicit statement plus consistent behavior]"
-  ]
-}
-
-Ensure the output is ONLY the valid JSON object with no explanations or trailing text.`;
+Output the updated WM as a JSON object with these three arrays. Ensure the total response stays within ${WM_TOKEN_LIMIT} tokens.
+`;
 
       // Generate updated working memory using Gemini
       const model = genAI.getGenerativeModel({ model: DEFAULT_MODEL });
@@ -451,6 +470,9 @@ Ensure the output is ONLY the valid JSON object with no explanations or trailing
         this.workingMemory = updatedWM;
         console.log('Successfully updated working memory');
         
+        // Check WM size and trim if needed
+        await this.checkWMSize();
+        
         // Persist updated WM
         await this.persistWM();
         
@@ -462,6 +484,95 @@ Ensure the output is ONLY the valid JSON object with no explanations or trailing
       }
     } catch (error) {
       console.error('Error updating working memory:', error);
+    }
+  }
+
+  /**
+   * Check and trim WM if it exceeds token limit
+   */
+  async checkWMSize() {
+    try {
+      const wmString = JSON.stringify(this.workingMemory);
+      const tokenCount = this.estimateTokens(wmString);
+      
+      console.log(`WM size: ${tokenCount} tokens (limit: ${WM_TOKEN_LIMIT})`);
+      
+      if (tokenCount > WM_TOKEN_LIMIT) {
+        console.log('WM exceeds token limit, trimming...');
+        await this.trimWM();
+      }
+    } catch (error) {
+      console.error('Error checking WM size:', error);
+    }
+  }
+
+  /**
+   * Trim WM to stay within token limit
+   */
+  async trimWM() {
+    try {
+      // First try to trim by priority
+      const trimmed = { ...this.workingMemory };
+      
+      // Keep all established facts
+      // Reduce corroborated hypotheses if needed
+      if (trimmed.corroborated_hypotheses && trimmed.corroborated_hypotheses.length > 10) {
+        trimmed.corroborated_hypotheses = trimmed.corroborated_hypotheses.slice(0, 10);
+      }
+      
+      // Reduce untested hypotheses more aggressively
+      if (trimmed.untested_hypotheses && trimmed.untested_hypotheses.length > 5) {
+        trimmed.untested_hypotheses = trimmed.untested_hypotheses.slice(0, 5);
+      }
+      
+      const tokenCount = this.estimateTokens(JSON.stringify(trimmed));
+      if (tokenCount <= WM_TOKEN_LIMIT) {
+        this.workingMemory = trimmed;
+        console.log(`Trimmed WM to ${tokenCount} tokens by reducing hypotheses count`);
+        return;
+      }
+      
+      // If still too large, use Gemini to create a more concise version
+      const prompt = `
+The following working memory for a user assistant exceeds our token limit of ${WM_TOKEN_LIMIT}.
+
+Please condense this working memory while preserving the most important insights.
+Focus on:
+1. All established facts
+2. Most relevant corroborated hypotheses
+3. Only the most recent and actionable untested hypotheses
+
+Current WM:
+---
+${JSON.stringify(this.workingMemory, null, 2)}
+---
+
+Return a condensed version with the same structure but more concise entries.
+Make sure to maintain the three categories: untested_hypotheses, corroborated_hypotheses, and established_facts.
+Ensure the output is a valid JSON object and stays within ${WM_TOKEN_LIMIT} tokens.`;
+
+      const model = genAI.getGenerativeModel({ model: DEFAULT_MODEL });
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      try {
+        // Extract JSON from response
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        const trimmedWM = JSON.parse(jsonStr);
+        this.workingMemory = trimmedWM;
+        console.log('Successfully trimmed WM using Gemini');
+      } catch (parseError) {
+        console.error('Error parsing trimmed WM JSON:', parseError);
+        // If parsing fails, revert to the basic trimming we tried earlier
+        this.workingMemory = trimmed;
+      }
+    } catch (error) {
+      console.error('Error trimming WM:', error);
     }
   }
 
@@ -546,6 +657,175 @@ Ensure the output is ONLY the valid JSON object with no explanations or trailing
       longTermMemory: this.longTermMemory,
       workingMemory: this.workingMemory
     };
+  }
+
+  /**
+   * Create LTM summary from STM entries using Gemini
+   * @param {Array} stmEntries - STM entries to summarize
+   * @returns {Object} - Updated LTM object
+   */
+  async createLTMSummary(stmEntries) {
+    try {
+      // Format STM entries for the prompt
+      const formattedSTMEntries = stmEntries.map(entry => {
+        return `[${entry.timestamp}] (${entry.type}): ${JSON.stringify(entry.data)}`;
+      }).join("\n");
+      
+      // Improved LTM summarization prompt
+      const prompt = `
+You are an advanced cognitive system that builds and maintains a rich user profile from interaction history.
+
+Your task: Synthesize new observations into the user's Long-Term Memory (LTM) profile, integrating them with existing knowledge.
+
+EXISTING LTM:
+---
+${JSON.stringify(this.longTermMemory, null, 2)}
+---
+
+NEW OBSERVATIONS TO INTEGRATE:
+---
+${formattedSTMEntries}
+---
+
+Follow these guidelines:
+
+1. MERGE observations with the existing LTM, REFINING understanding rather than just adding items
+2. PRIORITIZE explicit statements over inferences when they conflict
+3. INDICATE confidence levels for inferred traits (high/medium/low)
+4. FOCUS on patterns that reveal:
+   - Skill proficiency and knowledge areas
+   - UI/UX preferences and workflow habits
+   - Recurring frustrations and challenges
+   - Goals and motivations driving behavior
+   - Communication and learning style
+
+5. CONDENSE redundant or similar entries to maintain a clean profile
+6. REMOVE outdated information when new evidence suggests a change
+7. STRUCTURE the profile hierarchically using the template below
+
+Output the ENTIRE UPDATED LTM as a valid JSON object with this structure:
+{
+  "profile_summary": "Brief overview of user's primary traits and patterns",
+  "skills_and_knowledge": {
+    "confirmed_skills": [...],
+    "inferred_skills": [...],
+    "knowledge_gaps": [...]
+  },
+  "preferences_and_habits": {
+    "ui_preferences": [...],
+    "workflow_habits": [...],
+    "tool_preferences": [...]
+  },
+  "workflows": {
+    "common_tasks": [...],
+    "approaches": [...],
+    "frequency_patterns": [...]
+  },
+  "challenges": {
+    "recurring_frustrations": [...],
+    "difficulties": [...],
+    "blockers": [...]
+  },
+  "goals_and_motivations": {
+    "stated_goals": [...],
+    "inferred_goals": [...],
+    "motivations": [...]
+  },
+  "traits_and_attitudes": {
+    "communication_style": [...],
+    "decision_making": [...],
+    "learning_approach": [...]
+  }
+}
+
+Ensure the output stays within approximately ${LTM_TOKEN_LIMIT} tokens and is valid JSON without trailing commas.`;
+
+      // Generate LTM summary using Gemini
+      const model = genAI.getGenerativeModel({ model: SUMMARY_MODEL });
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      try {
+        // Extract JSON from response (handles both raw JSON or markdown-wrapped JSON)
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        const updatedLTM = JSON.parse(jsonStr);
+        console.log('Successfully created LTM summary');
+        return updatedLTM;
+      } catch (parseError) {
+        console.error('Error parsing LTM summary JSON:', parseError);
+        // If parsing fails, keep existing LTM and log the error
+        console.log('Raw LTM response:', responseText);
+        return this.longTermMemory;
+      }
+    } catch (error) {
+      console.error('Error creating LTM summary:', error);
+      return this.longTermMemory;
+    }
+  }
+
+  /**
+   * Create a conversational interface to the memory system
+   * @param {string} query - User query about the memory system
+   * @returns {string} - Response from the memory system
+   */
+  async conversationalMemoryQuery(query) {
+    try {
+      if (!this.initialized) {
+        await this.initialize();
+      }
+
+      console.log(`Processing memory query: ${query}`);
+      
+      // Format current memory state for the prompt
+      const memoryState = {
+        stm: this.shortTermMemory.slice(-10), // Last 10 STM entries for context
+        ltm: this.longTermMemory,
+        wm: this.workingMemory
+      };
+      
+      const prompt = `
+You are the Memory Portal, an interface to a multi-tiered memory system for an AI assistant.
+The system includes:
+
+1. Short-Term Memory (STM): Recent observations and inferences
+2. Long-Term Memory (LTM): Persistent user profile and patterns
+3. Working Memory (WM): Current hypotheses and established facts
+
+The user is asking about this memory system. Respond helpfully, transparently, and concisely.
+
+Current Memory State:
+---
+${JSON.stringify(memoryState, null, 2)}
+---
+
+User Query: "${query}"
+
+Guidelines:
+- If the query is about the CONTENT of memories, answer based on the data shown above
+- If the query is about EDITING memories, explain how memories are processed and consolidated
+- If the query is about HOW THE SYSTEM WORKS, explain the relevant components
+- If the query is a COMMAND to update memory, respond as if you've made the change (the actual implementation will happen elsewhere)
+- Keep your response concise but informative
+- Be transparent about confidence levels when discussing inferences vs. explicit observations
+
+Remember your role as a Memory Portal - you provide access to the system's knowledge about the user, not general knowledge.`;
+
+      // Generate response using Gemini
+      const model = genAI.getGenerativeModel({ model: SUMMARY_MODEL });
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      console.log('Generated memory portal response');
+      return responseText;
+    } catch (error) {
+      console.error('Error in conversational memory query:', error);
+      return "Sorry, I encountered an error accessing the memory system. Please try again.";
+    }
   }
 }
 

@@ -118,6 +118,21 @@ app.get('/api/memory', (req, res) => {
   }
 });
 
+// Endpoint for conversational memory interface
+app.post('/api/memory/query', async (req, res) => {
+  try {
+    if (!req.body.query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    
+    const response = await memoryManager.conversationalMemoryQuery(req.body.query);
+    res.json({ response });
+  } catch (error) {
+    console.error('Error processing memory query:', error);
+    res.status(500).json({ error: 'Failed to process memory query' });
+  }
+});
+
 // New endpoint to manually process a video
 app.get('/api/process/:filename', async (req, res) => {
   try {
