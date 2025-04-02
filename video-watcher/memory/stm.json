@@ -1,0 +1,995 @@
+[
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Not great",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "User comments about gameplay events."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "this makes it so they gain their health back if they get a kill.",
+      "type": "description",
+      "certainty": "high",
+      "context": "User explains a game mechanic."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh yeah, let's go",
+      "type": "excitement",
+      "certainty": "high",
+      "context": "User is getting excited about upcoming gameplay"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What, Man!",
+      "type": "reaction",
+      "certainty": "high",
+      "context": "User reacting to being knocked off of the platform"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "nada",
+      "type": "comment",
+      "certainty": "high",
+      "context": "User giving instructions about what items to use"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh fuck",
+      "type": "reaction",
+      "certainty": "high",
+      "context": "User reacts to ally being taken down"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, not bad",
+      "type": "reaction",
+      "certainty": "high",
+      "context": "User reacting to ally destroying a turret"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is focused on quickly reaching level 16, likely to unlock a specific ability or advantage.",
+      "type": "goal",
+      "basis": "User explicitly states a desire to reach level 16 and repeatedly mentions its importance.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is struggling to prioritize information from the item menu with information coming at him rapidly during gameplay.",
+      "type": "mental_state",
+      "basis": "The user makes comments saying he doesn't have time to prioritize what's going on with items because there is so much to pay attention to. ",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is trying to farm experience in order to level up.",
+      "type": "goal",
+      "basis": "The user mentions he wants to hit level 16 and can be seen attacking npcs",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:08:26.977Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is experiencing increased cognitive load during this fight",
+      "type": "mental_state",
+      "basis": "The user makes a comment that allies and enemies are using an item that restores health when someone is killed, requiring increased awareness and decision making to ensure killing blows are not used improperly",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "A streamer is playing the video game League of Legends. They are frustrated because they thought they were making a good play, but their team collapsed on them. They question what happened."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I don't know why I did that.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user said this immediately after what seems to be a misplay or wrong decision in the game."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I thought I was doing a good thing, but they all collapsed on me.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user is explaining their perceived good intention that resulted in a negative outcome."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What happened there?",
+      "type": "question",
+      "certainty": "high",
+      "context": "The user asks what happened after he gets killed or has an adverse event happen to him. This implies that he doesn't have full visibility over what just happened in game."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is frustrated and confused by their in-game performance.",
+      "type": "mental_state",
+      "basis": "The user expresses frustration ('I don't know why I did that,' 'they all collapsed on me') and asks for clarification ('What happened there?').",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is actively trying to improve their understanding of in-game situations and outcomes.",
+      "type": "goal",
+      "basis": "The user's question 'What happened there?' suggests a desire to learn from their mistakes and better comprehend the game's mechanics.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:10:55.039Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user might have a knowledge gap regarding specific in-game mechanics or strategies.",
+      "type": "knowledge_gap",
+      "basis": "The statement 'I don't know why I did that' and the question 'What happened there?' suggests a lack of understanding about the situation.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video features gameplay of the League of Legends game.  The player is controlling a character and destroying an inhibitor, attacking turrets, and securing jungle camps. The player is heard talking about taking jungle camps from the enemy.  Later on, the player is seen attempting to help his teammates and engage in team fights."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "We're gonna get this uh inhibitor for sure.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "At the start of the video, focusing on an enemy structure."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Come here.",
+      "type": "directive",
+      "certainty": "high",
+      "context": "After attacking an enemy."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "We got that extra kill.",
+      "type": "comment",
+      "certainty": "high",
+      "context": "After killing an enemy."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Yeah, we want to steal even more jungle camps from our dude.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Moving toward an enemy jungle camp."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "We're gonna be level 18 before him 'cause he's fighting all the time.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "While killing an enemy jungle camp."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So yeah, we're taking jungle camps, we're getting jungle camps, and we're hopefully gonna win because of it.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After taking multiple jungle camps."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "We're not gonna steal any jungle camp or any lane minions from this guy because he needs all the experiences he can get.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Deciding to not kill lane minions."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So I'm going to go here, I'm gonna try and tell them not to fight, but they're going to anyway.",
+      "type": "intention",
+      "certainty": "high",
+      "context": "After teleporting back to the base and seeing the team going into a fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh, yeah, dude.",
+      "type": "comment",
+      "certainty": "high",
+      "context": "When he catches up to help in the fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Come on, baby. They made it dude, they survived. They're doing good. And now I'm level 18.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After seeing teammates survive a fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh no, they're fighting again dude.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "After seeing the team starting another fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Why, why have they done this?",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "After seeing his team dying in the fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh my goodness.",
+      "type": "expression",
+      "certainty": "high",
+      "context": "After seeing teammates dying in the fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "1v4 this guy is going in.",
+      "type": "commentary",
+      "certainty": "high",
+      "context": "After seeing teammates dying in the fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Why? So silly.",
+      "type": "commentary",
+      "certainty": "high",
+      "context": "After his team dying in the fight."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What the...",
+      "type": "commentary",
+      "certainty": "high",
+      "context": "Getting stunned and killed in the game."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is playing a strategic game where resource management is important.",
+      "type": "goal",
+      "basis": "His comments about 'stealing jungle camps' and 'not stealing lane minions'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is trying to control the pace of the game and discourage risky engagements.",
+      "type": "goal",
+      "basis": "His statements about his team fighting too much and 'trying to tell them not to fight'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user values leveling up more than his teammates.",
+      "type": "goal",
+      "basis": "His comments about 'stealing jungle camps' and 'not stealing lane minions'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is annoyed or frustrated with his teammates' decisions.",
+      "type": "mental_state",
+      "basis": "His comments about 'they're going to anyway', 'Why have they done this?', 'so silly'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:11:35.759Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has a good understanding of the game mechanics and strategy.",
+      "type": "knowledge_gap",
+      "basis": "Comments about strategic plays such as objectives and experience distribution",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video recording shows a streamer playing League of Legends. He is playing a character called Ivern and is in a game with a player named Kayle that just got a triple kill. He then comments on other players' levels and deaths before trying to take down a dragon."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, so the Kayle just got a triple kill and that should be basically game.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Right after seeing Kayle get a triple kill. Expressing confidence that the game is won."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "It's unfortunate that there that this guy is low level.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "After seeing one of his teammates with a lower level than their support."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "He's low level than his support, which is not a good thing.",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "Immediately following the statement about a teammate being low level."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "He's missing a few CS.",
+      "type": "observation",
+      "certainty": "high",
+      "context": "While watching a teammate farm."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "He's got a lot of deaths.",
+      "type": "observation",
+      "certainty": "high",
+      "context": "While checking the score board."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That's a Yasuo for you.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After the ally Yasuo dies."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "They're not going to die.",
+      "type": "prediction",
+      "certainty": "high",
+      "context": "While observing the fight near the river."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "They're going to come back. They're going to get the dragon. They're going to reset. It's going to be great. It's going to be awesome.",
+      "type": "prediction",
+      "certainty": "high",
+      "context": "After an enemy died and before the Dragon respawned."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user seems knowledgeable about League of Legends meta and strategy.",
+      "type": "knowledge_gap",
+      "basis": "Comments on the Kayle being OP and comments about CS and deaths. Also, understanding the importance of level.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is slightly frustrated with the Yasuo player on their team.",
+      "type": "mental_state",
+      "basis": "The comment 'That's a Yasuo for you' after he dies. It is a joking jab that Yasuos frequently feed.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user wants his team to secure the dragon.",
+      "type": "goal",
+      "basis": "The statement about them getting the dragon after they reset.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:12:58.519Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user wants their team to end the game and win.",
+      "type": "goal",
+      "basis": "The statement that because the Kayle got a triple kill the game should be over",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video shows a gamer playing League of Legends. He makes a bet with himself that he can end the game at the current moment, but some of his plays do not go as planned."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, so my bet is that we end the game here because my alt's back up in four seconds.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Beginning of the recording, stating his prediction of the game ending soon due to his ultimate ability being available."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "All right, here we go. Oh, what do we got to do? We just got to focus these guys and not get hit by the turret like that.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Expressing his plan to eliminate enemy characters without being hit by the tower."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Everybody jumped under the turret, that was not...",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "Expressing frustration over an unfavorable event."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That was not ideal, However, we recover, we recover.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "Acknowledging a setback while maintaining optimism about recovering from it."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh, come on, man, why'd you do that? That was a bad move. You shouldn't have done that. Got a little excited there, pal.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "Expressing frustration with his teammate for a bad play"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is confident and believes they can quickly win the game.",
+      "type": "mental_state",
+      "basis": "Statements like \"my bet is that we end the game here\" and focusing his game play.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has experience with League of Legends and is skilled in the game.",
+      "type": "workflow",
+      "basis": "The user displays an understanding of game mechanics, optimal character placement and item prioritization.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has experience with streaming video games.",
+      "type": "workflow",
+      "basis": "The video recording is done in a way that the user can be seen while playing. Likely a twitch or YouTube streamer.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:16:20.046Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user gets easily upset with his teammates.",
+      "type": "mental_state",
+      "basis": "When the team jumps under the turret he is visibly upset.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:44.481Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "This video shows a League of Legends gameplay clip. The player is pushing the enemy base with minions and other teammates, successfully destroying multiple turrets and the enemy Nexus."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:44.481Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That's game",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After seeing the enemy team's Nexus being attacked."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:44.481Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "It's over with at this point.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After destroying an enemy turret"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:44.481Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User believes the game is won, possibly because of significant progress towards the enemy base.",
+      "type": "goal",
+      "basis": "User's statement 'That's game' directly after significant damage to the enemy base is inflicted.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:44.481Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is likely focused on quickly finishing the game.",
+      "type": "goal",
+      "basis": "User attacks enemy targets and buildings instead of retreating.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "A League of Legends streamer is playing Nocturne. He is trying to decide which item to build next, buying Sterak's Gage and Black Cleaver. He is fighting the enemy team in the river and gets the Ocean Drake and Baron Nashor."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Alright, 21 seconds to my next ult.",
+      "type": "interest",
+      "certainty": "high",
+      "context": "The user is stating the time until the next ultimate ability is available to use."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Um, we can pick this thing up because why not?",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user is intending to pick up an item because there is not a pressing goal."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Alright, I got my shield thing. I got my physical damage grants 20 move speed.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "The user is stating the items they just acquired."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "These guys are turtling. These guys are being turtles.",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "The user has stated their opinion of the play style of their opponents."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So we want to we want to wait around for this guy to use his alt. We definitely don't want to be diving into a 1v5 deal. But it's tempting though. It's tempting because this guy looks like he's all alone, but he's not, you know.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user is stating their goal and a tactic, but has also mentioned that it may be tempting to take a risk. They are also making a strategic assessment of the enemy's position."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, this looks good. This is looking good.",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "The user has stated their opinion of the current situation."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Shit.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user has reacted with a curse word to a sub-optimal situation."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Alright. Now we go get Baron. We probably could just end the game here. We don't need to get the Baron because it's a 1v4v5. So if the team wants to get the Baron, we're going to get the Baron and then we'll hopefully end the game.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user is stating their plan to end the game."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Yeah, it's been over. Done been over. The Zigs can't do what he does best, which is to throw bombs at the turret.",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "The user is stating that the game is essentially over and that the other player is unable to apply pressure."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "This guy is full build where is I am not full build.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "The user compares the progression of their items to the progression of items of another player."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Get that shit.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "The user has made a statement about attacking."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Oh my word.",
+      "type": "reaction",
+      "certainty": "high",
+      "context": "The user has reacted to something that has happened on screen."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is experienced with the game.",
+      "type": "knowledge_gap",
+      "basis": "The user knows the strategy involved, knows the items they need for their character, and knows what items the other users have.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is playing strategically.",
+      "type": "workflow",
+      "basis": "The user references strategy and waits for opportunities before attacking.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T02:19:52.703Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is confident in their ability to play.",
+      "type": "mental_state",
+      "basis": "The user makes a statement that another player is unable to apply pressure and makes statements such as \"It's been over\".",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video is a recording of someone playing League of Legends. The person is talking about how their feet hurt more after eating jalapeno poppers and mozzarella sticks. They think it's a problem with their toxin filtration system, their feet get red and swollen when they eat jalapeno poppers and drink wine. The video shows game set up and game play."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I ate some jalapeno peppers and uh some jalapeno poppers and some mozzarella sticks and now my feet hurt more than normal.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "The user says this while on the Discord screen after a loading screen."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What does that mean?",
+      "type": "question",
+      "certainty": "high",
+      "context": "After a statement in the game loading screen."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I don't know man.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After the previous question."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I think it means my...",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After the previous statement."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Something wrong with my filtration. My toxin filtration system in my body.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After the previous statement."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "My feet get red and swollen when I eat jalapeno poppers and drink wine.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After the previous statement."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is playing the game League of Legends. They may be a streamer or content creator.",
+      "type": "goal",
+      "basis": "The video shows the user in Discord and in a League of Legends game.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is likely in pain or discomfort.",
+      "type": "mental_state",
+      "basis": "The user explicitly states their feet hurt.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is not a native English speaker and is asking what stochastic means.",
+      "type": "knowledge_gap",
+      "basis": "The user asks what the word stochastic means.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is making a humorous observation about their body's reaction to food and drink.",
+      "type": "mental_state",
+      "basis": "The user's tone and the absurdity of linking specific food combinations to foot swelling suggest humor.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:00:28.347Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user may have a condition or sensitivity that is exacerbated by certain foods.",
+      "type": "need",
+      "basis": "The user describes a recurring physical reaction to specific foods and drink.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:44:25.865Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "A man in the top left corner of the screen announces that he's playing his last game of the day. The rest of the screen shows a League of Legends champion select screen."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:44:25.865Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay pal, this is going to be my last game of the day.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Said at the very beginning of the clip as the screen becomes visible showing a game menu with character selections."
+    }
+  },
+  {
+    "timestamp": "2025-03-31T05:44:25.865Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user likely plans to stop playing the game after this session.",
+      "type": "goal",
+      "basis": "The explicit statement mentions \"last game of the day\".",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-01T18:50:59.238Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "A man is gesturing with his hands on a webcam in the upper-left corner of the screen. His gestures resemble that of a game controller. The screen background is a sand dune landscape with a cheetah."
+    }
+  },
+  {
+    "timestamp": "2025-04-01T18:50:59.238Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is likely creating a video for an online audience.",
+      "type": "goal",
+      "basis": "The user's presence in a corner of the screen with a microphone suggests they are recording themselves while interacting with the computer.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-01T18:50:59.238Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user seems to be giving instructions/introduction to a video",
+      "type": "workflow",
+      "basis": "The use of hand gestures to demonstrate something being displayed on screen suggests that the video may be instructive or demonstrative.",
+      "certainty": "high"
+    }
+  }
+]

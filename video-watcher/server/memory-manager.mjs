@@ -1,436 +1,554 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs/promises';
+import path from 'path';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// --- Configuration ---
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const MEMORY_DIR = path.join(__dirname, "..", "memory");
-const LTM_PATH = path.join(MEMORY_DIR, "ltm.json"); // Store LTM as structured data or text summary
-const WM_PATH = path.join(MEMORY_DIR, "wm.json");
+// Constants for memory management
+const MEMORY_DIR = path.join(process.cwd(), 'memory');
 const STM_TOKEN_LIMIT = 8000;
-const STM_TRIM_THRESHOLD = 3000; // How many tokens worth of old entries to summarize for LTM
-const GEMINI_MODEL = "gemini-1.5-flash"; // Updated model
+const DEFAULT_MODEL = 'gemini-2.0-flash';
+const SUMMARY_MODEL = 'gemini-2.5-pro-exp-03-25'
+const MEMORY_STATE_FILE = path.join(MEMORY_DIR, 'memory-state.json');
 
-// --- State ---
-let stm = []; // Array of { timestamp: Date, type: string, data: any, tokenEstimate?: number }
-let ltmContent = { summary: "" }; // Or could be structured data
-let wm = {
-  untested: [],
-  tested: [],
-  solid: [],
-};
-let genAI = null;
-let isInitialized = false;
-
-// --- Helper Functions ---
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY);
 
 /**
- * Simple token estimation heuristic.
- * Replace with a proper tokenizer if more accuracy is needed.
- * @param {any} data Data to estimate tokens for.
- * @returns {number} Estimated token count.
+ * Multi-tiered memory system manager
  */
-function estimateTokens(data) {
-  try {
-    const jsonString = JSON.stringify(data);
-    // Basic heuristic: words * 1.3. Split by space and punctuation.
-    const words = jsonString.split(/[\s,.!?;:]+/).filter(Boolean);
-    return Math.ceil(words.length * 1.3);
-  } catch (error) {
-    console.error("Error estimating tokens:", error);
-    return 100; // Default fallback
+export class MemoryManager {
+  constructor() {
+    this.shortTermMemory = []; // In-memory array of recent events
+    this.longTermMemory = {}; // Structured persistent memory
+    this.workingMemory = {
+      untested_hypotheses: [],
+      corroborated_hypotheses: [],
+      established_facts: []
+    };
+    this.initialized = false;
   }
-}
 
-/**
- * Ensures the memory directory exists.
- */
-async function ensureMemoryDir() {
-  try {
-    await fs.mkdir(MEMORY_DIR, { recursive: true });
-  } catch (error) {
-    console.error("Error creating memory directory:", error);
-    // Depending on the error, we might want to throw or handle differently
-    if (error.code !== 'EEXIST') {
-        throw error; // Re-throw if it's not just that the directory already exists
+  /**
+   * Initialize the memory manager by loading persisted state
+   */
+  async initialize() {
+    try {
+      // Ensure memory directory exists
+      await fs.mkdir(MEMORY_DIR, { recursive: true });
+      
+      // Try to load the complete memory state first
+      try {
+        const stateContent = await fs.readFile(MEMORY_STATE_FILE, 'utf-8');
+        const savedState = JSON.parse(stateContent);
+        
+        // Restore complete state
+        this.shortTermMemory = savedState.shortTermMemory || [];
+        this.longTermMemory = savedState.longTermMemory || {};
+        this.workingMemory = savedState.workingMemory || {
+          untested_hypotheses: [],
+          corroborated_hypotheses: [],
+          established_facts: []
+        };
+        
+        console.log('Loaded complete memory state from memory-state.json');
+      } catch (error) {
+        console.log('No existing complete memory state found, trying individual memory files');
+        
+        // Fall back to loading individual memory files if complete state isn't available
+        try {
+          const ltmContent = await fs.readFile(path.join(MEMORY_DIR, 'ltm.json'), 'utf-8');
+          this.longTermMemory = JSON.parse(ltmContent);
+          console.log('Loaded long-term memory');
+        } catch (error) {
+          console.log('No existing LTM found, initializing empty LTM');
+          this.longTermMemory = {};
+        }
+        
+        try {
+          const wmContent = await fs.readFile(path.join(MEMORY_DIR, 'wm.json'), 'utf-8');
+          this.workingMemory = JSON.parse(wmContent);
+          console.log('Loaded working memory');
+        } catch (error) {
+          console.log('No existing WM found, initializing empty WM');
+        }
+        
+        try {
+          const stmContent = await fs.readFile(path.join(MEMORY_DIR, 'stm.json'), 'utf-8');
+          this.shortTermMemory = JSON.parse(stmContent);
+          console.log('Loaded short-term memory');
+        } catch (error) {
+          console.log('No existing STM found, initializing empty STM');
+        }
+        
+        // Save the initial state to create the complete state file
+        await this.persistCompleteState();
+      }
+      
+      this.initialized = true;
+      console.log('Memory Manager initialized');
+    } catch (error) {
+      console.error('Error initializing memory manager:', error);
+      throw error;
     }
   }
-}
 
-/**
- * Generic function to make calls to the Gemini API.
- * @param {string} prompt The prompt to send to the model.
- * @param {boolean} expectJson Should the response be parsed as JSON?
- * @returns {Promise<any>} The response from the API.
- */
-async function geminiApiCall(prompt, expectJson = false) {
-  if (!genAI) {
-    throw new Error("Gemini AI client not initialized.");
+  /**
+   * Estimate token count for a string (rough approximation)
+   * @param {string} text - Text to estimate token count for
+   * @returns {number} - Estimated token count
+   */
+  estimateTokens(text) {
+    // Simple estimation: 1 token ~ 4 characters
+    return Math.ceil(text.length / 4);
   }
-  try {
-    const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
 
-    if (expectJson) {
-      try {
-        // Clean potential markdown ```json ... ``` syntax
-        const jsonString = text.replace(/^```json\s*|```$/g, "").trim();
-        return JSON.parse(jsonString);
-      } catch (parseError) {
-        console.error("Failed to parse Gemini response as JSON:", parseError);
-        console.error("Original Gemini text:", text);
-        // Return a default structure or throw, depending on requirements
-        return expectJson ? {} : text; // Return empty object if JSON was expected but failed
+  /**
+   * Add new entries to short-term memory and trigger processing
+   * @param {object} analysisResult - Result of video analysis including explicit directives and inferred insights
+   */
+  async processNewAnalysis(analysisResult) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const timestamp = new Date().toISOString();
+    const contextEntry = {
+      timestamp,
+      type: 'video_analysis_summary',
+      data: {
+        summary: analysisResult.relevantContextSummary || analysisResult.summary || "No summary available"
+      }
+    };
+    
+    // Add context summary as a single entry
+    this.shortTermMemory.push(contextEntry);
+    
+    // Add each explicit directive as a separate entry
+    if (analysisResult.explicit_directives && Array.isArray(analysisResult.explicit_directives)) {
+      for (const directive of analysisResult.explicit_directives) {
+        this.shortTermMemory.push({
+          timestamp,
+          type: 'explicit_directive',
+          data: directive
+        });
       }
     }
-    return text;
-  } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    throw error; // Re-throw to be handled by the caller
-  }
-}
-
-// --- Core Memory Functions ---
-
-/**
- * Loads LTM and WM from disk.
- */
-async function loadMemory() {
-    await ensureMemoryDir();
-    try {
-        const ltmData = await fs.readFile(LTM_PATH, 'utf8');
-        ltmContent = JSON.parse(ltmData);
-        console.log("Loaded LTM from", LTM_PATH);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            console.log("LTM file not found, starting fresh.");
-            ltmContent = { summary: "" }; // Initialize default LTM
-            await persistLtm(); // Create the file
-        } else {
-            console.error("Error loading LTM:", error);
-        }
+    
+    // Add each explicit statement as a separate entry
+    if (analysisResult.explicit_statements && Array.isArray(analysisResult.explicit_statements)) {
+      for (const statement of analysisResult.explicit_statements) {
+        this.shortTermMemory.push({
+          timestamp,
+          type: 'explicit_statement',
+          data: statement
+        });
+      }
     }
-
-    try {
-        const wmData = await fs.readFile(WM_PATH, 'utf8');
-        wm = JSON.parse(wmData);
-        console.log("Loaded WM from", WM_PATH);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            console.log("WM file not found, starting fresh.");
-            wm = { untested: [], tested: [], solid: [] }; // Initialize default WM
-            await persistWm(); // Create the file
-        } else {
-            console.error("Error loading WM:", error);
-        }
+    
+    // Add each inferred insight as a separate entry
+    if (analysisResult.inferred_insights && Array.isArray(analysisResult.inferred_insights)) {
+      for (const insight of analysisResult.inferred_insights) {
+        this.shortTermMemory.push({
+          timestamp,
+          type: 'inferred_insight',
+          data: insight
+        });
+      }
     }
-}
-
-
-/**
- * Saves LTM content to disk.
- */
-async function persistLtm() {
-  try {
-    await fs.writeFile(LTM_PATH, JSON.stringify(ltmContent, null, 2), 'utf8');
-    // console.log("Persisted LTM to", LTM_PATH); // Can be noisy
-  } catch (error) {
-    console.error("Error persisting LTM:", error);
+    
+    console.log(`Added ${1 + 
+      (analysisResult.explicit_directives?.length || 0) + 
+      (analysisResult.explicit_statements?.length || 0) + 
+      (analysisResult.inferred_insights?.length || 0)} entries to STM`);
+    
+    // Persist STM after adding new entries
+    await this.persistSTM();
+    
+    // Save complete memory state
+    await this.persistCompleteState();
+    
+    // Check if STM needs consolidation
+    await this.checkSTMSize();
+    
+    // Update working memory with new insights
+    await this.updateWorkingMemory();
   }
-}
 
-/**
- * Saves WM state to disk.
- */
-async function persistWm() {
-  try {
-    await fs.writeFile(WM_PATH, JSON.stringify(wm, null, 2), 'utf8');
-    // console.log("Persisted WM to", WM_PATH); // Can be noisy
-  } catch (error) {
-    console.error("Error persisting WM:", error);
+  /**
+   * Check if STM exceeds token limit and consolidate if needed
+   */
+  async checkSTMSize() {
+    try {
+      // Estimate total tokens in STM
+      const stmString = JSON.stringify(this.shortTermMemory);
+      const tokenCount = this.estimateTokens(stmString);
+      
+      console.log(`STM size: ${tokenCount} tokens (limit: ${STM_TOKEN_LIMIT})`);
+      
+      // If STM exceeds token limit, consolidate oldest entries into LTM
+      if (tokenCount > STM_TOKEN_LIMIT) {
+        console.log('STM exceeds token limit, consolidating to LTM...');
+        await this.consolidateToLTM();
+      }
+    } catch (error) {
+      console.error('Error checking STM size:', error);
+    }
   }
-}
 
-/**
- * Extracts commands and preferences from a transcript using Gemini.
- * @param {string} transcript The video transcript.
- * @returns {Promise<object>} Parsed JSON object with commands/preferences.
- */
-export async function extractCommandsPreferences(transcript) {
-  if (!transcript || transcript.trim().length === 0) {
-    console.log("Transcript is empty, skipping command/preference extraction.");
-    return {
-        detected_commands: [],
-        user_preferences_goals: [],
-        relevant_context: "Transcript was empty.",
-    };
+  /**
+   * Consolidate oldest STM entries into LTM
+   */
+  async consolidateToLTM() {
+    try {
+      // Sort entries by timestamp
+      this.shortTermMemory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+      // Take oldest ~3000 tokens worth of entries
+      let oldestEntries = [];
+      let tokenCount = 0;
+      let i = 0;
+      
+      while (i < this.shortTermMemory.length && tokenCount < 3000) {
+        oldestEntries.push(this.shortTermMemory[i]);
+        tokenCount += this.estimateTokens(JSON.stringify(this.shortTermMemory[i]));
+        i++;
+      }
+      
+      if (oldestEntries.length === 0) {
+        console.log('No entries to consolidate');
+        return;
+      }
+      
+      console.log(`Consolidating ${oldestEntries.length} oldest entries (${tokenCount} tokens) to LTM`);
+      
+      // Create LTM summary using Gemini
+      const updatedLTM = await this.createLTMSummary(oldestEntries);
+      
+      // Update LTM with new summary
+      this.longTermMemory = updatedLTM;
+      
+      // Persist updated LTM
+      await this.persistLTM();
+      
+      // Remove consolidated entries from STM
+      this.shortTermMemory.splice(0, oldestEntries.length);
+      
+      // Persist updated STM
+      await this.persistSTM();
+      
+      // Save complete memory state
+      await this.persistCompleteState();
+      
+      console.log(`STM consolidated. ${this.shortTermMemory.length} entries remaining.`);
+    } catch (error) {
+      console.error('Error consolidating to LTM:', error);
+    }
   }
-  const prompt = `
-Analyze the following transcript obtained from a screen recording. Identify any potential commands the user might be implicitly or explicitly directing towards an AI assistant, or any stated preferences, goals, or frustrations relevant to their computer usage or tasks. Structure the response as a JSON object with the following fields:
+
+  /**
+   * Create LTM summary from STM entries using Gemini
+   * @param {Array} stmEntries - STM entries to summarize
+   * @returns {Object} - Updated LTM object
+   */
+  async createLTMSummary(stmEntries) {
+    try {
+      // Format STM entries for the prompt
+      const formattedSTMEntries = stmEntries.map(entry => {
+        return `[${entry.timestamp}] (${entry.type}): ${JSON.stringify(entry.data)}`;
+      }).join("\n");
+      
+      // Comprehensive LTM summarization prompt with clear instructions and structure
+      const prompt = `
+Synthesize the following user activity log entries (which include explicit statements and inferred insights) into a concise, structured long-term memory profile. Focus on consolidating recurring themes, established facts, and significant patterns regarding the user's:
+
+* Skills & Knowledge (including gaps)
+* Preferences & Habits
+* Common Workflows & Tool Usage
+* Recurring Frustrations or Challenges
+* Inferred Goals & Motivations
+* Implicit Opinions or Attitudes
+
+Preserve the nuance between explicitly stated facts and inferred observations where possible. This summary will be added to the user's persistent profile to inform a personalized AI assistant.
+
+Existing LTM:
+---
+${JSON.stringify(this.longTermMemory, null, 2)}
+---
+
+New STM Entries to Summarize & Integrate:
+---
+${formattedSTMEntries}
+---
+
+Guidelines for synthesis:
+1. Merge similar insights, prioritizing explicit statements over inferred ones when there's a conflict
+2. Note the confidence/certainty level when including inferences
+3. Build upon existing knowledge in the LTM, refining or correcting previous entries as needed
+4. Maintain a balance between specificity (concrete examples) and generalization (patterns)
+5. Preserve important contextual information that helps explain the user's behavior
+
+Output the *entire updated* LTM as a single, consolidated JSON object following this structure:
 {
-  "detected_commands": [
-    { "command": "...", "target": "...", "parameters": {...}, "certainty": "high/medium/low" }
-  ],
-  "user_preferences_goals": [
-    { "statement": "...", "type": "preference/goal/frustration/interest", "certainty": "high/medium/low" }
-  ],
-  "relevant_context": "Brief summary of transcript context relevant to commands/preferences."
+  "profile_summary": "Brief overview of the user",
+  "skills_and_knowledge": {
+    "confirmed_skills": [...],
+    "inferred_skills": [...],
+    "knowledge_gaps": [...]
+  },
+  "preferences_and_habits": {
+    "ui_preferences": [...],
+    "workflow_habits": [...],
+    "tool_preferences": [...]
+  },
+  "workflows": {
+    "common_tasks": [...],
+    "approaches": [...],
+    "frequency_patterns": [...]
+  },
+  "challenges": {
+    "recurring_frustrations": [...],
+    "difficulties": [...],
+    "blockers": [...]
+  },
+  "goals_and_motivations": {
+    "stated_goals": [...],
+    "inferred_goals": [...],
+    "motivations": [...]
+  },
+  "traits_and_attitudes": {
+    "communication_style": [...],
+    "decision_making": [...],
+    "learning_approach": [...]
+  }
 }
-If no commands or preferences are detected, return an empty array for the respective fields and provide context.
 
-Transcript:
----
-${transcript}
----
-`;
-  console.log("Requesting command/preference extraction from Gemini...");
-  try {
-      const result = await geminiApiCall(prompt, true); // Expect JSON response
-      // Add basic validation
-       if (typeof result !== 'object' || result === null || !Array.isArray(result.detected_commands) || !Array.isArray(result.user_preferences_goals)) {
-            console.error("Invalid JSON structure received for commands/preferences:", result);
-            // Return a default valid structure
-            return {
-                detected_commands: [],
-                user_preferences_goals: [],
-                relevant_context: "Error processing transcript or invalid response structure received.",
-            };
+Ensure the output is a valid JSON object with no trailing commas or syntax errors.`;
+
+      // Generate LTM summary using Gemini
+      const model = genAI.getGenerativeModel({ model: SUMMARY_MODEL });
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      try {
+        // Extract JSON from response (handles both raw JSON or markdown-wrapped JSON)
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
         }
-      console.log("Command/preference extraction successful.");
-      return result;
-  } catch (error) {
-      console.error("Error during command/preference extraction:", error);
-       // Return default structure on error
-       return {
-           detected_commands: [],
-           user_preferences_goals: [],
-           relevant_context: "Error occurred during command/preference extraction.",
-       };
+        
+        const updatedLTM = JSON.parse(jsonStr);
+        console.log('Successfully created LTM summary');
+        return updatedLTM;
+      } catch (parseError) {
+        console.error('Error parsing LTM summary JSON:', parseError);
+        // If parsing fails, keep existing LTM and log the error
+        console.log('Raw LTM response:', responseText);
+        return this.longTermMemory;
+      }
+    } catch (error) {
+      console.error('Error creating LTM summary:', error);
+      return this.longTermMemory;
+    }
   }
-}
 
-/**
- * Summarizes oldest STM entries for LTM using Gemini.
- * @param {Array<object>} entriesToSummarize Array of STM entries.
- * @returns {Promise<string>} The generated summary.
- */
-async function summarizeStmForLtm(entriesToSummarize) {
-  if (!entriesToSummarize || entriesToSummarize.length === 0) {
-    return "";
-  }
-  // Format entries for the prompt
-  const formattedEntries = entriesToSummarize.map(entry =>
-    `[${entry.timestamp.toISOString()}] (${entry.type}): ${JSON.stringify(entry.data)}`
-  ).join("\n");
-
-  const prompt = `
-Summarize the following user activity log entries into a concise paragraph focusing on recurring themes, established preferences, skills, goals, or common issues. This summary will be added to a long-term user profile. Focus on information useful for a personalized AI assistant to better understand the user. Append this summary to the existing long-term memory, do not replace it.
-
-Existing Long-Term Memory Summary:
----
-${ltmContent.summary || "None"}
----
-
-Entries to Summarize:
----
-${formattedEntries}
----
-
-New Combined Long-Term Memory Summary:
-`;
-  console.log("Requesting LTM summarization from Gemini...");
-  try {
-      const summary = await geminiApiCall(prompt);
-       console.log("LTM summarization successful.");
-      return summary.trim();
-  } catch (error) {
-      console.error("Error during LTM summarization:", error);
-      return ""; // Return empty string on error, so we don't wipe LTM
-  }
-}
-
-/**
- * Updates the Working Memory based on STM and LTM using Gemini.
- */
-async function updateWorkingMemory() {
-  // Prepare STM content for the prompt (maybe summarize if too long, but for now use all)
-  const stmSummaryForPrompt = stm.slice(-20).map(entry => // Limit context sent to WM prompt
-      `[${entry.timestamp.toISOString()}] (${entry.type}): ${JSON.stringify(entry.data)}`
-  ).join("\n");
-
-  const prompt = `
-Based on the recent activity log (STM) and the long-term user summary (LTM), update the user's Working Memory (WM).
+  /**
+   * Update working memory based on STM and LTM
+   */
+  async updateWorkingMemory() {
+    try {
+      // Only update if we have STM entries
+      if (this.shortTermMemory.length === 0) {
+        console.log('No STM entries to update working memory');
+        return;
+      }
+      
+      console.log('Updating working memory...');
+      
+      // Format STM entries for the prompt
+      const recentSTM = this.shortTermMemory.slice(-20); // Take most recent entries for context
+      const formattedSTM = recentSTM.map(entry => {
+        return `[${entry.timestamp}] (${entry.type}): ${JSON.stringify(entry.data)}`;
+      }).join('\n');
+      
+      // Working memory reasoning prompt with clear reasoning steps and explanation
+      const prompt = `
+Based on the recent activity log (STM - including explicit statements AND inferred insights), the long-term user profile (LTM), and the current Working Memory (WM), update the WM. The goal is to refine our understanding of the user's *current state, active goals, and immediate context*, including their potential mental state, unspoken needs, and opinions.
 
 Current WM:
 ---
-${JSON.stringify(wm, null, 2)}
+${JSON.stringify(this.workingMemory, null, 2)}
 ---
 
-STM (Recent Activity Log - Last ~20 Entries):
+STM (Recent Activity & Inferences):
 ---
-${stmSummaryForPrompt || "No recent activity"}
+${formattedSTM}
 ---
 
-LTM (Long-Term Summary):
+LTM (Long-Term Profile):
 ---
-${ltmContent.summary || "None"}
+${JSON.stringify(this.longTermMemory, null, 2)}
 ---
 
 Instructions:
-1. Analyze STM and LTM for new insights about the user's goals, preferences, skills, habits, or context.
-2. Add completely new insights to the 'untested' list.
-3. Review items in 'untested'. If recent STM activity corroborates an item, move it to 'tested'. If contradicted, remove it.
-4. Review items in 'tested'. If recent STM activity strongly corroborates an item consistently over time (consider LTM), move it to 'solid'. If contradicted, move it back to 'untested' or remove if strongly refuted.
-5. Keep statements concise and action-oriented where possible. Avoid redundancy. Ensure lists contain only strings.
-6. Output the *entire updated* WM as a JSON object in the format: { "untested": [...], "tested": [...], "solid": [...] }
-   Strictly adhere to the JSON format. Ensure the output is ONLY the JSON object, without any surrounding text or markdown.
-`;
 
-  console.log("Requesting WM update from Gemini...");
-  try {
-    const updatedWmJson = await geminiApiCall(prompt, true); // Expect JSON
+1. ANALYZE recent STM entries (especially 'inferred_insights') in light of LTM and current WM.
 
-    // Validate the structure of the response
-    if (
-        typeof updatedWmJson === 'object' && updatedWmJson !== null &&
-        Array.isArray(updatedWmJson.untested) &&
-        Array.isArray(updatedWmJson.tested) &&
-        Array.isArray(updatedWmJson.solid) &&
-        updatedWmJson.untested.every(item => typeof item === 'string') &&
-        updatedWmJson.tested.every(item => typeof item === 'string') &&
-        updatedWmJson.solid.every(item => typeof item === 'string')
-       ) {
-        wm = updatedWmJson;
-        console.log("WM update successful.");
-        await persistWm(); // Persist after successful update
-    } else {
-        console.error("Invalid JSON structure received for WM update:", updatedWmJson);
-        // Optionally revert or keep the old WM state
-    }
+2. GENERATE new 'untested_hypotheses' reflecting fresh observations about user state, intent, opinions, needs, confusion, etc.
+   - Focus on what's relevant to their CURRENT context
+   - Phrase as specific, testable statements
+   - Include hypotheses about immediate needs, mental state, and short-term goals
 
-  } catch (error) {
-    console.error("Error during WM update:", error);
-    // Decide if we should retry or just skip the update
-  }
+3. REVIEW existing 'untested_hypotheses':
+   - If recent STM/LTM SUPPORTS a hypothesis, PROMOTE it to 'corroborated_hypotheses'
+   - If recent STM/LTM CONTRADICTS a hypothesis, REMOVE it
+   - If hypothesis is no longer relevant to current context, REMOVE it
+   - Otherwise, KEEP it in 'untested_hypotheses'
+
+4. REVIEW existing 'corroborated_hypotheses':
+   - If CONSISTENTLY and STRONGLY supported over time, PROMOTE to 'established_facts'
+   - If recent activity raises DOUBTS, DEMOTE back to 'untested_hypotheses'
+   - If STRONGLY refuted, REMOVE it
+   - Otherwise, KEEP it in 'corroborated_hypotheses'
+
+5. Format each hypothesis/fact:
+   - Be CONCISE but SPECIFIC
+   - Include BASIS for belief (e.g., "User prefers dark mode [based on repeated UI selections]")
+   - Focus on ACTIONABLE insights (what would help the user NOW)
+   - Avoid redundancy with LTM and between lists
+
+Output the *entire updated* WM as a JSON object:
+{
+  "untested_hypotheses": [
+    "Hypothesis 1 [basis: observation X]",
+    "Hypothesis 2 [basis: inference from Y]"
+  ],
+  "corroborated_hypotheses": [
+    "Stronger hypothesis 1 [basis: consistent pattern Z]",
+    "Stronger hypothesis 2 [basis: multiple observations of A]"
+  ],
+  "established_facts": [
+    "Established fact 1 [basis: repeated confirmation of B]",
+    "Established fact 2 [basis: explicit statement plus consistent behavior]"
+  ]
 }
 
-/**
- * Checks STM token limit and triggers summarization/trimming if needed.
- */
-async function checkAndTrimStm() {
-  let currentTokenCount = stm.reduce((sum, entry) => sum + (entry.tokenEstimate || 0), 0);
-  console.log(`STM Status: ${stm.length} entries, ~${currentTokenCount} tokens.`);
+Ensure the output is ONLY the valid JSON object with no explanations or trailing text.`;
 
-  if (currentTokenCount > STM_TOKEN_LIMIT) {
-    console.log(`STM token limit (${STM_TOKEN_LIMIT}) exceeded. Summarizing oldest entries for LTM...`);
-    let tokensToTrim = 0;
-    let entriesToSummarize = [];
-    let entriesToKeep = [];
-
-    // Iterate from oldest (start of array)
-    for (const entry of stm) {
-      if (tokensToTrim < STM_TRIM_THRESHOLD) {
-        tokensToTrim += (entry.tokenEstimate || 0);
-        entriesToSummarize.push(entry);
-      } else {
-        entriesToKeep.push(entry);
+      // Generate updated working memory using Gemini
+      const model = genAI.getGenerativeModel({ model: DEFAULT_MODEL });
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+      
+      try {
+        // Extract JSON from response (handles both raw JSON or markdown-wrapped JSON)
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        const updatedWM = JSON.parse(jsonStr);
+        this.workingMemory = updatedWM;
+        console.log('Successfully updated working memory');
+        
+        // Persist updated WM
+        await this.persistWM();
+        
+        // Save complete memory state
+        await this.persistCompleteState();
+      } catch (parseError) {
+        console.error('Error parsing working memory JSON:', parseError);
+        console.log('Raw WM response:', responseText);
       }
+    } catch (error) {
+      console.error('Error updating working memory:', error);
     }
+  }
 
-    console.log(`Attempting to summarize ${entriesToSummarize.length} entries (~${tokensToTrim} tokens).`);
-    const summary = await summarizeStmForLtm(entriesToSummarize);
-
-    if (summary) {
-        // Append new summary to existing LTM content.
-        // A more sophisticated approach might involve structuring LTM better.
-        ltmContent.summary = ltmContent.summary
-            ? `${ltmContent.summary}\n\n[${new Date().toISOString()}] Summary of older activity:\n${summary}`
-            : `[${new Date().toISOString()}] Summary of activity:\n${summary}`;
-
-        await persistLtm();
-        stm = entriesToKeep; // Update STM
-        console.log(`STM trimmed. New size: ${stm.length} entries, ~${currentTokenCount - tokensToTrim} tokens.`);
-    } else {
-        console.error("LTM summarization failed. STM not trimmed to avoid data loss.");
-        // Potentially implement a fallback trimming mechanism (e.g., just remove oldest without summary)
-        // For now, we'll just leave STM large.
+  /**
+   * Persist long-term memory to disk
+   */
+  async persistLTM() {
+    try {
+      await fs.writeFile(
+        path.join(MEMORY_DIR, 'ltm.json'),
+        JSON.stringify(this.longTermMemory, null, 2),
+        'utf-8'
+      );
+      console.log('Persisted LTM to disk');
+    } catch (error) {
+      console.error('Error persisting LTM:', error);
     }
+  }
+
+  /**
+   * Persist working memory to disk
+   */
+  async persistWM() {
+    try {
+      await fs.writeFile(
+        path.join(MEMORY_DIR, 'wm.json'),
+        JSON.stringify(this.workingMemory, null, 2),
+        'utf-8'
+      );
+      console.log('Persisted WM to disk');
+    } catch (error) {
+      console.error('Error persisting WM:', error);
+    }
+  }
+
+  /**
+   * Persist short-term memory to disk
+   */
+  async persistSTM() {
+    try {
+      await fs.writeFile(
+        path.join(MEMORY_DIR, 'stm.json'),
+        JSON.stringify(this.shortTermMemory, null, 2),
+        'utf-8'
+      );
+      console.log('Persisted STM to disk');
+    } catch (error) {
+      console.error('Error persisting STM:', error);
+    }
+  }
+
+  /**
+   * Persist the complete memory state to a single JSON file
+   */
+  async persistCompleteState() {
+    try {
+      const completeState = {
+        shortTermMemory: this.shortTermMemory,
+        longTermMemory: this.longTermMemory,
+        workingMemory: this.workingMemory,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      await fs.writeFile(
+        MEMORY_STATE_FILE,
+        JSON.stringify(completeState, null, 2),
+        'utf-8'
+      );
+      console.log('Persisted complete memory state to disk');
+    } catch (error) {
+      console.error('Error persisting complete memory state:', error);
+    }
+  }
+
+  /**
+   * Get the current memory state
+   * @returns {Object} - Current memory state
+   */
+  getMemoryState() {
+    return {
+      shortTermMemory: this.shortTermMemory,
+      longTermMemory: this.longTermMemory,
+      workingMemory: this.workingMemory
+    };
   }
 }
 
-
-// --- Public API ---
-
-/**
- * Initializes the memory manager. MUST be called before other functions.
- * @param {string} apiKey Gemini API Key.
- */
-export async function initializeMemoryManager(apiKey) {
-  if (isInitialized) {
-    console.warn("Memory manager already initialized.");
-    return;
-  }
-  console.log("Initializing Memory Manager...");
-  if (!apiKey) {
-      throw new Error("Gemini API key is required for Memory Manager initialization.");
-  }
-  genAI = new GoogleGenerativeAI(apiKey);
-  await loadMemory(); // Load persisted state
-  isInitialized = true;
-  console.log("Memory Manager Initialized.");
-
-  // Initial WM update based on loaded state
-  console.log("Performing initial WM update based on loaded LTM/STM state...");
-  await updateWorkingMemory();
-}
-
-/**
- * Adds an event to the Short-Term Memory.
- * Triggers LTM summarization and WM updates as needed.
- * @param {{ type: string, data: any }} event The event to add.
- */
-export async function addEventToStm(event) {
-  if (!isInitialized) {
-    console.error("Memory manager not initialized. Cannot add event.");
-    return;
-  }
-  console.log(`Adding event to STM: ${event.type}`);
-  const timestamp = new Date();
-  const tokenEstimate = estimateTokens(event.data);
-  stm.push({ ...event, timestamp, tokenEstimate });
-
-  // Check token limits and potentially trim/summarize asynchronously
-  // We run this without awaiting it directly here to avoid blocking
-  checkAndTrimStm().catch(error => {
-    console.error("Error during background STM check/trim:", error);
-  });
-
-  // Update working memory asynchronously based on the new STM state
-  // Also run without awaiting directly
-  updateWorkingMemory().catch(error => {
-    console.error("Error during background WM update:", error);
-  });
-}
-
-/**
- * Gets the current state of the memory components.
- * @returns {{stm: Array<object>, ltm: object, wm: object}} Current memory state.
- */
-export function getMemoryState() {
-    if (!isInitialized) {
-        return {
-            stm: [],
-            ltm: { summary: "Memory manager not initialized." },
-            wm: { untested: [], tested: [], solid: [] },
-        };
-    }
-  return {
-    stm: stm,
-    ltm: ltmContent,
-    wm: wm,
-  };
-} 
+// Export singleton instance
+const memoryManager = new MemoryManager();
+export default memoryManager; 

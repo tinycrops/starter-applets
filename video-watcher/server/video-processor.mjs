@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
-import { extractCommandsPreferences, addEventToStm } from './memory-manager.mjs';
 
 // Initialize Gemini AI - using the same approach as video folder project
 const key = process.env.VITE_GEMINI_API_KEY;
@@ -22,14 +21,68 @@ Analyze this video recording and provide a detailed description of:
 
 Structure your response as a JSON object with the following fields:
 {
-  "summary": "Detailed
-  edg summary of the video",
+  "summary": "Detailed summary of the video",
   "screenContent": "Description of what's visible on the screen",
   "actions": "Description of actions performed",
   "topics": ["topic1", "topic2"],
   "transcript": "Transcription of speech",
   "tags": ["tag1", "tag2"]
 }
+`;
+
+// Prompt template for insight inference directly from video
+const INFERENCE_PROMPT = `
+Analyze this screen recording to identify both explicit statements and infer the user's underlying mental state, intentions, and tacit knowledge. Go beyond the literal content to provide deeper insights.
+
+Focus on:
+1.  **Explicit Directives & Preferences:** Commands (implicit/explicit) for an AI, stated preferences, goals, or expressed frustrations.
+2.  **Inferred User State & Intentions:** Interpret the user's actions and words to deduce:
+    *   **Mental/Emotional State:** Signs of confusion, focus, frustration, satisfaction, contemplation, cognitive load, etc. (e.g., "User seems hesitant", "User sounds frustrated with the loading time").
+    *   **Underlying Goals/Motivations:** What is the user *really* trying to achieve, even if not stated? (e.g., "Appears to be learning [Software X]", "Trying to optimize their workflow for task Y").
+    *   **Unspoken Needs/Desires:** What might the user want or need based on their actions? (e.g., "User seems to be looking for a shortcut", "Might benefit from an explanation of [Concept Z]").
+    *   **Observed Workflow/Habits:** Patterns in how the user interacts with the system or performs tasks (e.g., "Prefers using keyboard shortcuts", "Methodically checks settings before proceeding", "Often multi-tasks between App A and App B").
+    *   **Potential Knowledge Gaps:** Areas where the user seems uncertain or lacks information (e.g., "Unsure how feature X works", "Searching for basic commands").
+    *   **Implied Opinions/Critiques:** Subtle judgments about tools, processes, or outcomes, even if not voiced directly (e.g., "Seems unimpressed by the tool's speed", "Appears to implicitly prefer Tool A over Tool B for this task").
+    *   **Withheld Recommendations/Ideas:** Potential improvements or alternative approaches the user might be considering but not stating (e.g., "Might be thinking about automating this step", "Considering a different tool for the next step").
+
+Guidelines for analysis:
+1. Focus on making reasonable inferences based on evidence in the video
+2. Include a basis or reasoning for each inference to explain your thinking
+3. Rate your certainty for each insight (high/medium/low)
+4. Be specific and actionable rather than vague
+5. Look for patterns in the user's behavior, language, and screen interactions
+
+Structure the response as a JSON object:
+{
+  "explicit_directives": [
+    { 
+      "command": "The specific instruction or command detected", 
+      "target": "What/who the command is directed to", 
+      "parameters": {"param1": "value1"}, 
+      "certainty": "high/medium/low", 
+      "context": "Description of when/how this directive was given" 
+    }
+  ],
+  "explicit_statements": [
+    { 
+      "statement": "The explicit statement made by the user", 
+      "type": "preference/goal/frustration/interest/question", 
+      "certainty": "high/medium/low", 
+      "context": "Description of when/how this statement was made" 
+    }
+  ],
+  "inferred_insights": [
+    { 
+      "insight": "The inferred insight about the user's state, goals, needs, etc.", 
+      "type": "mental_state/goal/need/workflow/knowledge_gap/opinion/withheld_idea", 
+      "basis": "The specific observation or pattern that led to this inference", 
+      "certainty": "high/medium/low" 
+    }
+  ],
+  "relevant_context_summary": "Brief summary of the video focusing on aspects most relevant to understanding the user's current state and goals."
+}
+
+If no significant explicit items or inferences can be made, return empty arrays for the respective fields but provide the context summary. Be specific in the 'basis' field for inferences.
 `;
 
 /**
@@ -113,7 +166,7 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
       throw new Error('File never reached ACTIVE state after multiple attempts');
     }
     
-    // Create request for Gemini
+    // Create request for Gemini for basic video analysis
     const req = [
       { text: customPrompt },
       {
@@ -124,10 +177,10 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
       }
     ];
     
-    console.log(`Sending to Gemini (model: ${DEFAULT_MODEL}) for analysis...`);
+    console.log(`Sending to Gemini (model: ${DEFAULT_MODEL}) for basic analysis...`);
     const result = await genAI.getGenerativeModel({ model: DEFAULT_MODEL }).generateContent(req);
     
-    console.log('Response received from Gemini');
+    console.log('Response received from Gemini for basic analysis');
     const responseText = result.response.text();
     
     // Try to parse the JSON response
@@ -142,37 +195,19 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
       }
       
       const parsedResponse = JSON.parse(jsonStr);
-
-      // NEW: If we have a transcript, extract commands and preferences
-      if (parsedResponse.transcript && parsedResponse.transcript.trim().length > 0) {
-        try {
-          console.log("Transcript found, extracting commands and preferences...");
-          const commandsPreferences = await extractCommandsPreferences(parsedResponse.transcript);
-          
-          // Add to the response
-          parsedResponse.commands_preferences = commandsPreferences;
-          
-          // Also add to short-term memory
-          await addEventToStm({
-            type: 'video_transcript_analysis',
-            data: {
-              videoFileName: path.basename(filePath),
-              transcript: parsedResponse.transcript,
-              commandsPreferences: commandsPreferences
-            }
-          });
-          
-          console.log("Commands and preferences extracted and added to memory.");
-        } catch (extractError) {
-          console.error("Error extracting commands/preferences:", extractError);
-          // Continue with the rest of the function even if this part fails
-        }
-      } else {
-        console.log("No transcript found or transcript empty, skipping command/preference extraction.");
-      }
+      
+      // Make a second API call for deeper insights using the same video file
+      console.log('Making second API call for deeper inference analysis...');
+      const inferenceResult = await analyzeVideoForInsights(uploadResult);
+      
+      // Combine both results
+      const enhancedResponse = {
+        ...parsedResponse,
+        ...inferenceResult
+      };
       
       return {
-        ...parsedResponse,
+        ...enhancedResponse,
         text: responseText,
         candidates: result.response.candidates,
         feedback: result.response.promptFeedback
@@ -204,6 +239,71 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
 }
 
 /**
+ * Analyzes a video to infer explicit directives and deeper insights
+ * @param {Object} uploadedFile - The uploaded file object from Gemini API
+ * @returns {Promise<Object>} - Analysis results with explicit and inferred information
+ */
+async function analyzeVideoForInsights(uploadedFile) {
+  try {
+    console.log('Analyzing video for explicit directives and inferred insights...');
+    
+    // Create request for Gemini with inference prompt
+    const req = [
+      { text: INFERENCE_PROMPT },
+      {
+        fileData: {
+          mimeType: uploadedFile.mimeType,
+          fileUri: uploadedFile.uri
+        }
+      }
+    ];
+    
+    // Use the same model for both analyses
+    const model = genAI.getGenerativeModel({ model: DEFAULT_MODEL });
+    
+    // Generate inference analysis
+    console.log(`Sending to Gemini (model: ${DEFAULT_MODEL}) for inference analysis...`);
+    const result = await model.generateContent(req);
+    const responseText = result.response.text();
+    
+    try {
+      // Try to parse the JSON response (handling both raw JSON and markdown-wrapped JSON)
+      let jsonStr = responseText;
+      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      if (jsonMatch && jsonMatch[1]) {
+        jsonStr = jsonMatch[1];
+      }
+      
+      const inferenceResult = JSON.parse(jsonStr);
+      console.log('Successfully parsed inference analysis');
+      
+      return inferenceResult;
+    } catch (parseError) {
+      console.error('Error parsing inference analysis:', parseError);
+      console.log('Raw inference response:', responseText);
+      
+      // Return default structure with empty arrays if parsing fails
+      return {
+        explicit_directives: [],
+        explicit_statements: [],
+        inferred_insights: [],
+        relevant_context_summary: "Error parsing inference analysis"
+      };
+    }
+  } catch (error) {
+    console.error('Error analyzing video for insights:', error);
+    
+    // Return default structure with empty arrays if analysis fails
+    return {
+      explicit_directives: [],
+      explicit_statements: [],
+      inferred_insights: [],
+      relevant_context_summary: `Error analyzing video: ${error.message}`
+    };
+  }
+}
+
+/**
  * Saves analysis results to the dataset
  * @param {string} videoPath - Path to the original video
  * @param {Object} analysisResult - Analysis results from Gemini
@@ -220,7 +320,9 @@ export async function saveToDataset(videoPath, analysisResult, datasetFolder) {
       videoFileName: videoFileName,
       videoPath: videoPath,
       processedAt: timestamp,
-      analysis: analysisResult
+      analysis: analysisResult,
+      // Include inferred insights in the dataset entry if available
+      inferred_insights: analysisResult.inferred_insights || []
     };
     
     // Save to the dataset folder
@@ -232,23 +334,6 @@ export async function saveToDataset(videoPath, analysisResult, datasetFolder) {
       JSON.stringify(datasetEntry, null, 2), 
       'utf-8'
     );
-    
-    // NEW: Add the analysis completion event to short-term memory
-    try {
-      await addEventToStm({
-        type: 'video_analysis_complete',
-        data: {
-          videoFileName: videoFileName,
-          analysisId: datasetEntry.id,
-          timestamp: timestamp,
-          summary: analysisResult.summary || "No summary available",
-          topics: analysisResult.topics || []
-        }
-      });
-    } catch (memoryError) {
-      console.error("Error adding analysis to memory (non-critical):", memoryError);
-      // Continue even if memory update fails
-    }
     
     return {
       success: true,

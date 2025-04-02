@@ -5,7 +5,7 @@ import path from 'path';
 import chokidar from 'chokidar';
 import { fileURLToPath } from 'url';
 import { analyzeVideo, saveToDataset } from './video-processor.mjs';
-import { initializeMemoryManager, getMemoryState } from './memory-manager.mjs';
+import memoryManager from './memory-manager.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -103,17 +103,18 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// NEW: Add API endpoint to access memory
+// Add memory API endpoint
 app.get('/api/memory', (req, res) => {
   try {
-    const memoryState = getMemoryState();
+    const memoryState = memoryManager.getMemoryState();
     res.json({
-      success: true,
-      memory: memoryState
+      shortTermMemory: memoryState.shortTermMemory,
+      longTermMemory: memoryState.longTermMemory,
+      workingMemory: memoryState.workingMemory
     });
   } catch (error) {
-    console.error('Error accessing memory state:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching memory state:', error);
+    res.status(500).json({ error: 'Failed to retrieve memory state' });
   }
 });
 
@@ -136,6 +137,9 @@ app.get('/api/process/:filename', async (req, res) => {
     const result = await analyzeVideo(filePath);
     const saveResult = await saveToDataset(filePath, result, DATASET_FOLDER);
     console.log(`Manually processed and saved analysis for: ${filePath}`);
+    
+    // Process analysis results with memory manager
+    await memoryManager.processNewAnalysis(result);
     
     // Mark as processed
     processedVideos.add(filename);
@@ -209,6 +213,9 @@ async function scanForMissedVideos() {
             await saveToDataset(filePath, result, DATASET_FOLDER);
             console.log(`Processed and saved analysis for missed video: ${filePath}`);
             
+            // Process analysis results with memory manager
+            await memoryManager.processNewAnalysis(result);
+            
             // Mark as processed
             processedVideos.add(videoFile);
           } else {
@@ -230,22 +237,16 @@ async function scanForMissedVideos() {
 
 // Set up file watcher
 async function setupWatcher() {
+  // Initialize memory manager
+  try {
+    await memoryManager.initialize();
+    console.log('Memory manager initialized');
+  } catch (error) {
+    console.error('Error initializing memory manager:', error);
+  }
+  
   await ensureDirectoryExists(DATASET_FOLDER);
   await loadProcessedVideos();
-  
-  // NEW: Initialize memory manager
-  try {
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      console.error("WARNING: Missing VITE_GEMINI_API_KEY environment variable. Memory manager will not be initialized.");
-    } else {
-      await initializeMemoryManager(apiKey);
-      console.log("Memory manager initialized successfully.");
-    }
-  } catch (error) {
-    console.error("Error initializing memory manager:", error);
-    // Continue with the rest of the startup process
-  }
   
   // Scan for missed videos on startup
   await scanForMissedVideos();
@@ -295,6 +296,9 @@ async function setupWatcher() {
           const result = await analyzeVideo(filePath);
           await saveToDataset(filePath, result, DATASET_FOLDER);
           console.log(`Processed and saved analysis for: ${filePath}`);
+          
+          // Process analysis results with memory manager
+          await memoryManager.processNewAnalysis(result);
           
           // Mark as processed
           processedVideos.add(fileName);
