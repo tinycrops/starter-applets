@@ -1,65 +1,82 @@
-# Video Watcher - Gemini Dataset Builder
+# Video Journaling App
 
-This application watches a folder for new video recordings from OBS, sends them to Google's Gemini AI for analysis, and builds a dataset of AI-generated labels and descriptions.
+A secure video journaling application that prioritizes user privacy while offering optional cloud features.
 
 ## Features
 
-- **Automatic Video Detection**: Monitors a specified folder for new video recordings
-- **AI Analysis**: Sends videos to Gemini for detailed analysis
-- **Dataset Building**: Creates a structured dataset of AI-generated labels
-- **Web Interface**: View and explore the generated dataset
+### Free Tier
+- Local video storage
+- Basic video organization
+- Community support
 
-## Prerequisites
+### Premium Features
+- Cloud backup (end-to-end encrypted)
+- Cross-device sync
+- AI-powered insights
+- Priority support
 
-1. Node.js 18.x or higher
-2. Google Gemini API key
-3. OBS Studio configured to save recordings to a specific folder
+## Privacy-First Approach
 
-## Setup
+We believe in putting your privacy first:
+- All videos are stored locally by default
+- Cloud backup is optional and end-to-end encrypted
+- You control which videos are synced to the cloud
+- You can delete cloud backups at any time
 
-1. Clone this repository
+## Getting Started
+
+1. Clone the repository
 2. Install dependencies:
-   ```
+   ```bash
    npm install
    ```
-3. Create a `.env` file in the project root with the following variables:
-   ```
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
-   VIDEO_WATCH_FOLDER=Q:\\
-   VIDEO_DATASET_FOLDER=C:\\Users\\YourUsername\\video-dataset
-   ```
-   Note: Update the paths to match your system configuration.
 
-## Usage
-
-1. Start the application:
+3. Copy the environment file and update with your credentials:
+   ```bash
+   cp .env.example .env
    ```
+
+4. Set up your Stripe account and add your API keys to the `.env` file
+
+5. Start the development server:
+   ```bash
    npm run dev
    ```
 
-2. The server will start watching the specified folder for new video recordings
+## Environment Variables
 
-3. Record a video in OBS and save it to the watched folder (Q:\ by default)
+- `STRIPE_SECRET_KEY`: Your Stripe secret key
+- `STRIPE_PUBLIC_KEY`: Your Stripe public key
+- `JWT_SECRET`: Secret key for JWT authentication
+- `FRONTEND_URL`: URL of your frontend application
+- `BACKEND_URL`: URL of your backend server
+- `ENCRYPTION_KEY`: Key used for video encryption
 
-4. The application will automatically detect the new video, send it to Gemini for analysis, and add it to the dataset
+## Subscription Plans
 
-5. Open your browser to http://localhost:8001 to view the web interface
+### Basic Plan ($4.99/month)
+- Local video storage
+- Basic video organization
+- Community support
 
-## How It Works
+### Premium Plan ($9.99/month)
+- Everything in Basic
+- Cloud backup (encrypted)
+- Cross-device sync
+- AI-powered insights
+- Priority support
 
-1. The application uses `chokidar` to watch the specified folder for new video files
-2. When a new video is detected, it is uploaded to Google's Gemini AI
-3. A structured prompt asks Gemini to analyze the video and provide detailed information
-4. The response is parsed and saved to the dataset folder as a JSON file
-5. The web interface displays all analyzed videos and their AI-generated metadata
+## Security
 
-## Customization
+- All videos are stored locally by default
+- Cloud backups are end-to-end encrypted
+- User authentication using JWT
+- Secure payment processing with Stripe
 
-- To modify the prompt sent to Gemini, edit the `DEFAULT_PROMPT` in `server/video-processor.mjs`
-- To change the watched folder or dataset location, update the environment variables in `.env`
+## Contributing
 
-## Folder Structure
+Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
 
-- `/server`: Backend Node.js server code
-- `/src`: Frontend React application
-- `/server/video-processor.mjs`: Core module for video analysis with Gemini 
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
