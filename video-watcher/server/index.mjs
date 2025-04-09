@@ -366,7 +366,7 @@ async function searchVideoAnalyses(query) {
     }
     
     // Prepare data for relevance check
-    const relevanceChecks = [];
+    const videoInfos = [];
     for (const item of analysesData) {
       const { data } = item;
       
@@ -397,7 +397,7 @@ async function searchVideoAnalyses(query) {
         textContent += '\n';
       }
       
-      relevanceChecks.push({
+      videoInfos.push({
         filename: item.filename,
         videoPath: data.videoPath,
         videoFileName: data.videoFileName,
@@ -406,31 +406,39 @@ async function searchVideoAnalyses(query) {
       });
     }
     
-    // Use Gemini to evaluate relevance
+    // Use Gemini to evaluate relevance in batches
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     const relevantVideos = [];
     
-    const RELEVANCE_PROMPT = (videoContent, userQuery) => `
-      Analyze the following video analysis content:
-      ---
-      ${videoContent}
-      ---
+    // Process videos in batches of 10
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < videoInfos.length; i += BATCH_SIZE) {
+      const batch = videoInfos.slice(i, i + BATCH_SIZE);
+      
+      // Create a combined prompt for the batch
+      const batchPrompt = `
+        Analyze the following video analyses and determine their relevance to the user's question: "${query}"
 
-      Determine if this content is relevant to the user's question: "${userQuery}"
+        For each video analysis below, determine if it is relevant and provide a relevance score and justification.
+        Respond with a JSON array where each element contains:
+        {
+          "filename": "The filename of the video",
+          "is_relevant": boolean,
+          "relevance_score": number (0.0 to 1.0),
+          "justification": "Brief explanation (1-2 sentences)"
+        }
 
-      Respond ONLY with a JSON object containing:
-      {
-        "is_relevant": boolean, // true if relevant, false otherwise
-        "relevance_score": number, // A score from 0.0 to 1.0 indicating relevance
-        "justification": "A brief explanation of why it is or isn't relevant (1-2 sentences)."
-      }
-    `;
-    
-    // Process each video for relevance
-    for (const videoInfo of relevanceChecks) {
+        Video Analyses:
+        ${batch.map((info, index) => `
+          Video ${index + 1} (${info.videoFileName}):
+          ---
+          ${info.textContent}
+          ---
+        `).join('\n\n')}
+      `;
+      
       try {
-        const prompt = RELEVANCE_PROMPT(videoInfo.textContent, query);
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent(batchPrompt);
         const responseText = result.response.text();
         
         // Parse the response
@@ -440,21 +448,24 @@ async function searchVideoAnalyses(query) {
           jsonStr = jsonMatch[1];
         }
         
-        const parsedResponse = JSON.parse(jsonStr);
+        const parsedResponses = JSON.parse(jsonStr);
         
-        // Add to relevant videos if score is above threshold
-        if (parsedResponse.is_relevant && parsedResponse.relevance_score > 0.5) {
-          relevantVideos.push({
-            filename: videoInfo.filename,
-            videoPath: videoInfo.videoPath,
-            videoFileName: videoInfo.videoFileName,
-            processedAt: videoInfo.processedAt,
-            score: parsedResponse.relevance_score,
-            justification: parsedResponse.justification
-          });
-        }
+        // Add relevant videos to results
+        parsedResponses.forEach((response, index) => {
+          if (response.is_relevant && response.relevance_score > 0.5) {
+            const videoInfo = batch[index];
+            relevantVideos.push({
+              filename: videoInfo.filename,
+              videoPath: videoInfo.videoPath,
+              videoFileName: videoInfo.videoFileName,
+              processedAt: videoInfo.processedAt,
+              score: response.relevance_score,
+              justification: response.justification
+            });
+          }
+        });
       } catch (error) {
-        console.error(`Error evaluating relevance for ${videoInfo.filename}:`, error);
+        console.error(`Error evaluating batch ${i / BATCH_SIZE + 1}:`, error);
       }
     }
     
