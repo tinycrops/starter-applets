@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getStatus, getVideos, getMemoryState, queryMemory } from './api';
+import { getStatus, getVideos, getMemoryState, queryMemory, searchVideos } from './api';
 
 function App() {
   const [status, setStatus] = useState(null);
@@ -11,6 +11,12 @@ function App() {
   const [memoryQuery, setMemoryQuery] = useState('');
   const [memoryResponse, setMemoryResponse] = useState('');
   const [queryLoading, setQueryLoading] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
 
   // Fetch server status and videos on component mount
   useEffect(() => {
@@ -64,6 +70,26 @@ function App() {
     }
   };
 
+  // Handle search form submission
+  const handleSearchSubmit = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setSearchLoading(true);
+    setSearchResults([]);
+    setSearchError(null);
+    
+    try {
+      const data = await searchVideos(searchQuery);
+      setSearchResults(data.results || []);
+    } catch (err) {
+      console.error('Search failed:', err);
+      setSearchError(err.message || 'An unknown error occurred during search.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   // Render a video card
   const VideoCard = ({ video }) => {
     const { id, videoFileName, processedAt, analysis } = video;
@@ -114,6 +140,18 @@ function App() {
     );
   };
 
+  // Render a search result card
+  const SearchResultCard = ({ result }) => {
+    return (
+      <div className="card result-card">
+        <h3>{result.videoFileName}</h3>
+        <p><strong>Processed:</strong> {new Date(result.processedAt).toLocaleString()}</p>
+        <p><strong>Relevance Score:</strong> {result.score.toFixed(2)}</p>
+        <p><strong>Justification:</strong> {result.justification}</p>
+      </div>
+    );
+  };
+
   if (loading && !status) {
     return <div className="container">Loading...</div>;
   }
@@ -145,6 +183,46 @@ function App() {
         </div>
       )}
       
+      {/* Search card - place it before the tabs */}
+      <div className="card search-card">
+        <h3>Search Video Journals</h3>
+        <form onSubmit={handleSearchSubmit} className="search-form">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Ask about your past recordings..."
+            className="search-input"
+            disabled={searchLoading}
+          />
+          <button
+            type="submit"
+            disabled={searchLoading || !searchQuery.trim()}
+            className="search-submit"
+          >
+            {searchLoading ? 'Searching...' : 'Search'}
+          </button>
+        </form>
+        {searchError && <p className="error-text">{searchError}</p>}
+      </div>
+      
+      {/* Display search results if available */}
+      {searchResults.length > 0 && (
+        <div className="search-results">
+          <h2>Search Results ({searchResults.length})</h2>
+          <div className="video-list">
+            {searchResults.map((result, index) => (
+              <SearchResultCard key={index} result={result} />
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Show "no results" message if search was performed but returned nothing */}
+      {!searchLoading && searchResults.length === 0 && searchQuery && searchError === null && (
+        <div className="card"><p>No relevant videos found for your query.</p></div>
+      )}
+      
       <div className="tabs">
         <button 
           className={activeTab === 'videos' ? 'active' : ''} 
@@ -160,7 +238,8 @@ function App() {
         </button>
       </div>
       
-      {activeTab === 'videos' && (
+      {/* Only show regular video list if no search results are displayed */}
+      {activeTab === 'videos' && searchResults.length === 0 && (
         <div>
           <h2>Processed Videos ({videos.length})</h2>
           

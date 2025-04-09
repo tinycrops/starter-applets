@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import chokidar from 'chokidar';
 import { fileURLToPath } from 'url';
-import { analyzeVideo, saveToDataset } from './video-processor.mjs';
+import { analyzeVideo, saveToDataset, genAI } from './video-processor.mjs';
 import memoryManager from './memory-manager.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -340,6 +340,148 @@ async function setupWatcher() {
   
   console.log('File watcher initialized.');
 }
+
+// Function to search video analyses based on a natural language query
+async function searchVideoAnalyses(query) {
+  console.log(`Received search query: ${query}`);
+  try {
+    // Read all analysis files from the dataset folder
+    const files = await fs.readdir(DATASET_FOLDER);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) {
+      return [];
+    }
+    
+    // Read and parse each JSON file
+    const analysesData = [];
+    for (const file of jsonFiles) {
+      try {
+        const content = await fs.readFile(path.join(DATASET_FOLDER, file), 'utf-8');
+        const data = JSON.parse(content);
+        analysesData.push({ filename: file, data });
+      } catch (error) {
+        console.error(`Error parsing JSON file ${file}:`, error);
+      }
+    }
+    
+    // Prepare data for relevance check
+    const relevanceChecks = [];
+    for (const item of analysesData) {
+      const { data } = item;
+      
+      // Extract key text content from the analysis
+      let textContent = '';
+      
+      // Include summary if available
+      if (data.analysis?.summary) {
+        textContent += `Summary: ${data.analysis.summary}\n\n`;
+      }
+      
+      // Include transcript if available
+      if (data.analysis?.transcript) {
+        textContent += `Transcript: ${data.analysis.transcript}\n\n`;
+      }
+      
+      // Include topics if available
+      if (data.analysis?.topics && data.analysis.topics.length > 0) {
+        textContent += `Topics: ${data.analysis.topics.join(', ')}\n\n`;
+      }
+      
+      // Include inferred insights if available
+      if (data.analysis?.inferred_insights && data.analysis.inferred_insights.length > 0) {
+        textContent += 'Insights:\n';
+        data.analysis.inferred_insights.forEach(insight => {
+          textContent += `- ${insight.insight} (Basis: ${insight.basis})\n`;
+        });
+        textContent += '\n';
+      }
+      
+      relevanceChecks.push({
+        filename: item.filename,
+        videoPath: data.videoPath,
+        videoFileName: data.videoFileName,
+        processedAt: data.processedAt,
+        textContent
+      });
+    }
+    
+    // Use Gemini to evaluate relevance
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const relevantVideos = [];
+    
+    const RELEVANCE_PROMPT = (videoContent, userQuery) => `
+      Analyze the following video analysis content:
+      ---
+      ${videoContent}
+      ---
+
+      Determine if this content is relevant to the user's question: "${userQuery}"
+
+      Respond ONLY with a JSON object containing:
+      {
+        "is_relevant": boolean, // true if relevant, false otherwise
+        "relevance_score": number, // A score from 0.0 to 1.0 indicating relevance
+        "justification": "A brief explanation of why it is or isn't relevant (1-2 sentences)."
+      }
+    `;
+    
+    // Process each video for relevance
+    for (const videoInfo of relevanceChecks) {
+      try {
+        const prompt = RELEVANCE_PROMPT(videoInfo.textContent, query);
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        
+        // Parse the response
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        const parsedResponse = JSON.parse(jsonStr);
+        
+        // Add to relevant videos if score is above threshold
+        if (parsedResponse.is_relevant && parsedResponse.relevance_score > 0.5) {
+          relevantVideos.push({
+            filename: videoInfo.filename,
+            videoPath: videoInfo.videoPath,
+            videoFileName: videoInfo.videoFileName,
+            processedAt: videoInfo.processedAt,
+            score: parsedResponse.relevance_score,
+            justification: parsedResponse.justification
+          });
+        }
+      } catch (error) {
+        console.error(`Error evaluating relevance for ${videoInfo.filename}:`, error);
+      }
+    }
+    
+    // Sort by relevance score (descending)
+    return relevantVideos.sort((a, b) => b.score - a.score);
+  } catch (error) {
+    console.error('Error searching video analyses:', error);
+    throw error;
+  }
+}
+
+// New endpoint for searching video analyses
+app.post('/api/search', async (req, res) => {
+  try {
+    if (!req.body.query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    
+    const query = req.body.query;
+    const results = await searchVideoAnalyses(query);
+    
+    res.json({ results });
+  } catch (error) {
+    console.error('Error searching videos:', error);
+    res.status(500).json({ error: error.message || 'Failed to search videos' });
+  }
+});
 
 // Initialize server
 const port = process.env.PORT || 8001;

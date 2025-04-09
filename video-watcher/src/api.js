@@ -58,4 +58,26 @@ export async function queryMemory(query) {
   }
   
   return response.json();
+}
+
+/**
+ * Search through video analyses based on a natural language query
+ * @param {string} query - The search query
+ * @returns {Promise<Array>} Array of relevant video objects
+ */
+export async function searchVideos(query) {
+  const response = await fetch('/api/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Search request failed' }));
+    throw new Error(errorData.error || 'Failed to perform search');
+  }
+  
+  return response.json(); // Should return { results: [...] }
 } 

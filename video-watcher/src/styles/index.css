@@ -171,4 +171,48 @@ button:focus-visible {
   overflow: auto;
   font-size: 0.8rem;
   max-height: 200px;
+}
+
+/* Search functionality styling */
+.search-card {
+  margin-bottom: 1.5rem;
+}
+
+.search-form {
+  display: flex;
+  margin-top: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 1rem;
+}
+
+.search-submit {
+  margin-left: 0.5rem;
+  background-color: #646cff;
+  color: white;
+}
+
+.search-submit:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+}
+
+.search-results {
+  margin-bottom: 2rem;
+}
+
+.result-card {
+  border-left: 3px solid #646cff;
+}
+
+.error-text {
+  color: #f44336;
+  margin-top: 0.5rem;
 } 
