@@ -1,10 +1,11 @@
 import express from 'express';
 import ViteExpress from 'vite-express';
 import fs from 'fs/promises';
+import { createReadStream } from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
 import { fileURLToPath } from 'url';
-import { analyzeVideo, saveToDataset } from './video-processor.mjs';
+import { analyzeVideo, saveToDataset, genAI } from './video-processor.mjs';
 import memoryManager from './memory-manager.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -340,6 +341,355 @@ async function setupWatcher() {
   
   console.log('File watcher initialized.');
 }
+
+// Function to search video analyses based on a natural language query
+async function searchVideoAnalyses(query) {
+  console.log(`Received search query: ${query}`);
+  try {
+    // Read all analysis files from the dataset folder
+    const files = await fs.readdir(DATASET_FOLDER);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) {
+      return [];
+    }
+    
+    // Read and parse each JSON file
+    const analysesData = [];
+    for (const file of jsonFiles) {
+      try {
+        const content = await fs.readFile(path.join(DATASET_FOLDER, file), 'utf-8');
+        const data = JSON.parse(content);
+        analysesData.push({ filename: file, data });
+      } catch (error) {
+        console.error(`Error parsing JSON file ${file}:`, error);
+      }
+    }
+    
+    // Prepare data for relevance check
+    const videoInfos = [];
+    for (const item of analysesData) {
+      const { data } = item;
+      
+      // Extract key text content from the analysis
+      let textContent = '';
+      
+      // Include summary if available
+      if (data.analysis?.summary) {
+        textContent += `Summary: ${data.analysis.summary}\n\n`;
+      }
+      
+      // Include transcript if available
+      if (data.analysis?.transcript) {
+        textContent += `Transcript: ${data.analysis.transcript}\n\n`;
+      }
+      
+      // Include topics if available
+      if (data.analysis?.topics && data.analysis.topics.length > 0) {
+        textContent += `Topics: ${data.analysis.topics.join(', ')}\n\n`;
+      }
+      
+      // Include inferred insights if available
+      if (data.analysis?.inferred_insights && data.analysis.inferred_insights.length > 0) {
+        textContent += 'Insights:\n';
+        data.analysis.inferred_insights.forEach(insight => {
+          textContent += `- ${insight.insight} (Basis: ${insight.basis})\n`;
+        });
+        textContent += '\n';
+      }
+      
+      videoInfos.push({
+        filename: item.filename,
+        videoPath: data.videoPath,
+        videoFileName: data.videoFileName,
+        processedAt: data.processedAt,
+        textContent
+      });
+    }
+    
+    // Use Gemini to evaluate relevance in batches
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const relevantVideos = [];
+    
+    // Process videos in batches of 10
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < videoInfos.length; i += BATCH_SIZE) {
+      const batch = videoInfos.slice(i, i + BATCH_SIZE);
+      
+      // Create a combined prompt for the batch
+      const batchPrompt = `
+        Analyze the following video analyses and determine their relevance to the user's question: "${query}"
+
+        For each video analysis below, determine if it is relevant and provide a relevance score and justification.
+        Respond with a JSON array where each element contains:
+        {
+          "filename": "The filename of the video",
+          "is_relevant": boolean,
+          "relevance_score": number (0.0 to 1.0),
+          "justification": "Brief explanation (1-2 sentences)"
+        }
+
+        Video Analyses:
+        ${batch.map((info, index) => `
+          Video ${index + 1} (${info.videoFileName}):
+          ---
+          ${info.textContent}
+          ---
+        `).join('\n\n')}
+      `;
+      
+      try {
+        const result = await model.generateContent(batchPrompt);
+        const responseText = result.response.text();
+        
+        // Parse the response
+        let jsonStr = responseText;
+        const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        const parsedResponses = JSON.parse(jsonStr);
+        
+        // Add relevant videos to results
+        parsedResponses.forEach((response, index) => {
+          if (response.is_relevant && response.relevance_score > 0.5) {
+            const videoInfo = batch[index];
+            relevantVideos.push({
+              filename: videoInfo.filename,
+              videoPath: videoInfo.videoPath,
+              videoFileName: videoInfo.videoFileName,
+              processedAt: videoInfo.processedAt,
+              score: response.relevance_score,
+              justification: response.justification
+            });
+          }
+        });
+      } catch (error) {
+        console.error(`Error evaluating batch ${i / BATCH_SIZE + 1}:`, error);
+      }
+    }
+    
+    // Sort by relevance score (descending)
+    return relevantVideos.sort((a, b) => b.score - a.score);
+  } catch (error) {
+    console.error('Error searching video analyses:', error);
+    throw error;
+  }
+}
+
+// Function to handle chat conversation in video discussion
+async function handleChatConversation(message, history, videoContext, memoryContext) {
+  console.log('Handling chat conversation with message:', message);
+  
+  try {
+    // Create a Gemini model instance
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        temperature: 1,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 8192,
+      }
+    });
+    
+    // Format conversation history for Gemini
+    const formattedHistory = history.map(msg => ({
+      role: msg.type === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }]
+    }));
+    
+    // Filter out system messages and ensure the first message is always from user
+    let filteredHistory = formattedHistory.filter(msg => msg.role === 'user' || msg.role === 'model');
+    
+    // If history exists but doesn't start with user message, adjust accordingly
+    if (filteredHistory.length > 0 && filteredHistory[0].role !== 'user') {
+      filteredHistory = [];
+    }
+    
+    // Start chat session with history if it exists
+    const chatSession = model.startChat({
+      history: filteredHistory.length >= 2 ? filteredHistory.slice(0, -1) : [],
+    });
+    
+    // Prepare context information
+    const contextInfo = `
+You are an AI assistant helping a user discuss a video they've previously recorded. You have access to the following context:
+
+VIDEO CONTEXT:
+- Title: ${videoContext.videoFileName}
+- Summary: ${videoContext.summary}
+${videoContext.topics && videoContext.topics.length > 0 ? `- Topics: ${videoContext.topics.join(', ')}` : ''}
+${videoContext.transcript ? '- Full transcript is available' : '- No transcript available'}
+
+MEMORY CONTEXT:
+- Working Memory: ${memoryContext.workingMemory?.established_facts?.length || 0} established facts and ${memoryContext.workingMemory?.untested_hypotheses?.length || 0} hypotheses
+- Short-Term Memory: ${memoryContext.shortTermMemory?.length || 0} recent items
+- Long-Term Memory: Profile information and knowledge base available
+
+Use this context to provide informed, helpful responses about the video content and the user's memories related to it.
+The user's message is: ${message}
+`;
+
+    // Send message with context
+    const result = await chatSession.sendMessage(contextInfo);
+    const response = result.response.text();
+    
+    console.log('Generated response:', response);
+    return { response };
+    
+  } catch (error) {
+    console.error('Error in chat conversation:', error);
+    throw error;
+  }
+}
+
+// New endpoint for searching video analyses
+app.post('/api/search', async (req, res) => {
+  try {
+    if (!req.body.query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    
+    const query = req.body.query;
+    const results = await searchVideoAnalyses(query);
+    
+    res.json({ results });
+  } catch (error) {
+    console.error('Error searching videos:', error);
+    res.status(500).json({ error: error.message || 'Failed to search videos' });
+  }
+});
+
+// New endpoint for video discussion chat
+app.post('/api/videos/chat', async (req, res) => {
+  try {
+    const { message, history, videoContext, memoryContext } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    if (!videoContext || !memoryContext) {
+      return res.status(400).json({ error: 'Video and memory context are required' });
+    }
+    
+    const result = await handleChatConversation(message, history || [], videoContext, memoryContext);
+    res.json(result);
+  } catch (error) {
+    console.error('Error in chat endpoint:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to process chat message',
+      success: false 
+    });
+  }
+});
+
+// New endpoint for continuing discussion with a specific video context
+app.post('/api/videos/continue-discussion', async (req, res) => {
+  try {
+    const { query, filename } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    
+    if (!filename) {
+      return res.status(400).json({ error: 'Video filename is required' });
+    }
+    
+    // Read the video file data
+    const videoPath = path.join(DATASET_FOLDER, filename);
+    
+    // Check if file exists using fs.access instead of fs.existsSync
+    try {
+      await fs.access(videoPath);
+    } catch (error) {
+      return res.status(404).json({ error: 'Video data not found' });
+    }
+    
+    const videoData = JSON.parse(await fs.readFile(videoPath, 'utf-8'));
+    
+    // Get current memory state
+    const memoryState = await memoryManager.getMemoryState();
+    
+    // Prepare a response with the combined context
+    const responseData = {
+      success: true,
+      videoContext: {
+        videoFileName: videoData.videoFileName,
+        processedAt: videoData.processedAt,
+        summary: videoData.analysis?.summary || 'No summary available',
+        transcript: videoData.analysis?.transcript || null,
+        topics: videoData.analysis?.topics || [],
+        insights: videoData.analysis?.inferred_insights || []
+      },
+      memoryContext: {
+        workingMemory: memoryState.workingMemory,
+        shortTermMemory: memoryState.shortTermMemory,
+        longTermMemory: memoryState.longTermMemory
+      },
+      initialQuery: query
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error continuing discussion:', error);
+    res.status(500).json({ error: error.message || 'Failed to continue discussion' });
+  }
+});
+
+// Endpoint to serve video files
+app.get('/videos/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const sourceVideoPath = path.join(WATCH_FOLDER, filename);
+    
+    // Check if file exists
+    try {
+      await fs.access(sourceVideoPath);
+    } catch (error) {
+      return res.status(404).send('Video file not found');
+    }
+    
+    // Get file stats to determine size
+    const stat = await fs.stat(sourceVideoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+    
+    // Handle range requests for video streaming
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = (end - start) + 1;
+      
+      const fileStream = createReadStream(sourceVideoPath, { start, end });
+      const head = {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': 'video/mp4',
+      };
+      
+      res.writeHead(206, head);
+      fileStream.pipe(res);
+    } else {
+      // No range requested, send entire file
+      const head = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+      };
+      
+      res.writeHead(200, head);
+      createReadStream(sourceVideoPath).pipe(res);
+    }
+  } catch (error) {
+    console.error('Error serving video:', error);
+    res.status(500).send('Error serving video file');
+  }
+});
 
 // Initialize server
 const port = process.env.PORT || 8001;

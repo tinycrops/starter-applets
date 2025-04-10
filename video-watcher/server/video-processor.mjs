@@ -8,6 +8,9 @@ const key = process.env.VITE_GEMINI_API_KEY;
 const fileManager = new GoogleAIFileManager(key);
 const genAI = new GoogleGenerativeAI(key);
 
+// Export genAI for use in other modules
+export { genAI };
+
 // Default model to use if not specified
 const DEFAULT_MODEL = 'gemini-2.0-flash';
 
