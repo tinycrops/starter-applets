@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getStatus, getVideos, getMemoryState, queryMemory, searchVideos } from './api';
 
 function App() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState(null);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,18 @@ function App() {
     }
   };
 
+  // Handle navigation to discussion page
+  const handleNavigateToDiscussion = (filename) => {
+    navigate(`/discuss/${filename}?query=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // Handle direct navigation to discussion from video card
+  const handleDirectVideoDiscussion = (filename, videoFileName) => {
+    // Create a default query based on the video name
+    const defaultQuery = `Tell me about this video: ${videoFileName}`;
+    navigate(`/discuss/${filename}?query=${encodeURIComponent(defaultQuery)}`);
+  };
+
   // Render a video card
   const VideoCard = ({ video }) => {
     const { id, videoFileName, processedAt, analysis } = video;
@@ -136,6 +150,13 @@ function App() {
             )}
           </div>
         )}
+        
+        <button 
+          className="continue-discussion-btn"
+          onClick={() => handleDirectVideoDiscussion(videoFileName.replace(/\.[^/.]+$/, '.json'), videoFileName)}
+        >
+          Chat with Video
+        </button>
       </div>
     );
   };
@@ -148,6 +169,12 @@ function App() {
         <p><strong>Processed:</strong> {new Date(result.processedAt).toLocaleString()}</p>
         <p><strong>Relevance Score:</strong> {result.score.toFixed(2)}</p>
         <p><strong>Justification:</strong> {result.justification}</p>
+        <button 
+          className="continue-discussion-btn"
+          onClick={() => handleNavigateToDiscussion(result.filename)}
+        >
+          Continue Discussion
+        </button>
       </div>
     );
   };

@@ -80,4 +80,57 @@ export async function searchVideos(query) {
   }
   
   return response.json(); // Should return { results: [...] }
+}
+
+/**
+ * Continue discussion with a specific video, including memory context
+ * @param {string} query - The original search query
+ * @param {string} filename - The filename of the video to continue discussion with
+ * @returns {Promise<Object>} Video and memory context for continuation
+ */
+export async function continueDiscussion(query, filename) {
+  const response = await fetch('/api/videos/continue-discussion', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, filename }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Continue discussion request failed' }));
+    throw new Error(errorData.error || 'Failed to continue discussion with video');
+  }
+  
+  return response.json();
+}
+
+/**
+ * Send a chat message in the video discussion
+ * @param {string} message - The user's message
+ * @param {Array} history - Previous messages in the conversation
+ * @param {Object} videoContext - Context about the video
+ * @param {Object} memoryContext - Memory state context
+ * @returns {Promise<Object>} Response from the AI
+ */
+export async function sendChatMessage(message, history, videoContext, memoryContext) {
+  const response = await fetch('/api/videos/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message,
+      history,
+      videoContext,
+      memoryContext
+    }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Chat request failed' }));
+    throw new Error(errorData.error || 'Failed to process chat message');
+  }
+  
+  return response.json();
 } 
