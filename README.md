@@ -1,3 +1,5 @@
+Look at this video for an explaination of the Short Term Memory, Long Term Memory Working Memory query feature https://x.com/tinycrops/status/1910105664589799515
+
 # Video Watcher - Gemini Dataset Builder
 
 This application watches a folder for new video recordings from OBS, sends them to Google's Gemini AI for analysis, and builds a dataset of AI-generated labels and descriptions.
