@@ -200,8 +200,66 @@ async function scanForMissedVideos() {
     const videoFiles = files.filter(file => file.endsWith('.mp4'));
     
     let missedCount = 0;
+    let reprocessedCount = 0;
     
-    // Check each video file
+    // First, check for failed processing attempts in the dataset
+    try {
+      const datasetFiles = await fs.readdir(DATASET_FOLDER);
+      const jsonFiles = datasetFiles.filter(file => file.endsWith('.json'));
+      
+      for (const jsonFile of jsonFiles) {
+        try {
+          const content = await fs.readFile(path.join(DATASET_FOLDER, jsonFile), 'utf-8');
+          const data = JSON.parse(content);
+          
+          // Check if this is a failed processing attempt
+          if (data.analysis?.error === 'File never reached ACTIVE state after multiple attempts') {
+            const videoPath = data.videoPath;
+            const videoFileName = data.videoFileName;
+            
+            // Skip if this file is currently being processed
+            if (processingFiles.has(videoPath)) {
+              console.log(`File ${videoFileName} is already being processed, skipping.`);
+              continue;
+            }
+            
+            processingFiles.add(videoPath);
+            
+            try {
+              // Check if file is stable before processing
+              console.log(`Checking if failed video is stable: ${videoFileName}`);
+              let stable = await isFileStable(videoPath);
+              
+              if (stable) {
+                console.log(`Reprocessing previously failed video: ${videoPath}`);
+                const result = await analyzeVideo(videoPath);
+                await saveToDataset(videoPath, result, DATASET_FOLDER);
+                console.log(`Successfully reprocessed and updated analysis for: ${videoPath}`);
+                
+                // Process analysis results with memory manager
+                await memoryManager.processNewAnalysis(result);
+                
+                // Mark as processed
+                processedVideos.add(videoFileName);
+                reprocessedCount++;
+              } else {
+                console.log(`Failed video ${videoFileName} is still being written, will try again later.`);
+              }
+            } catch (error) {
+              console.error(`Error reprocessing failed video ${videoPath}:`, error);
+            } finally {
+              processingFiles.delete(videoPath);
+            }
+          }
+        } catch (error) {
+          console.error(`Error reading/parsing dataset file ${jsonFile}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Error scanning dataset for failed videos:', error);
+    }
+    
+    // Then check for completely unprocessed videos
     for (const videoFile of videoFiles) {
       if (!processedVideos.has(videoFile)) {
         missedCount++;
@@ -245,7 +303,7 @@ async function scanForMissedVideos() {
       }
     }
     
-    console.log(`Scan complete. Found ${missedCount} missed videos.`);
+    console.log(`Scan complete. Found ${missedCount} missed videos and reprocessed ${reprocessedCount} failed videos.`);
   } catch (error) {
     console.error('Error scanning for missed videos:', error);
   }

@@ -148,9 +148,10 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
     // Wait for file processing (checking progress)
     console.log(`Checking progress for file ${uploadResult.name}...`);
     let isReady = false;
+    let retryCount = 0;
+    const baseWaitTime = 2000; // Start with 2 second wait
     
-    // Try up to 6 times, with increasing delays
-    for (let i = 0; i < 6; i++) {
+    while (!isReady) {
       const progress = await checkProgress(uploadResult.name);
       console.log(`File status: ${JSON.stringify(progress)}`);
       
@@ -159,14 +160,11 @@ export async function analyzeVideo(filePath, customPrompt = DEFAULT_PROMPT) {
         break;
       }
       
-      // Wait with increasing delay (2s, 3s, 4s, 5s, 6s)
-      const waitTime = (i + 2) * 1000;
+      // Calculate wait time with exponential backoff, capped at 30 seconds
+      const waitTime = Math.min(baseWaitTime * Math.pow(1.5, retryCount), 30000);
       console.log(`File not ready, waiting ${waitTime/1000}s before retry...`);
       await wait(waitTime);
-    }
-    
-    if (!isReady) {
-      throw new Error('File never reached ACTIVE state after multiple attempts');
+      retryCount++;
     }
     
     // Create request for Gemini for basic video analysis
