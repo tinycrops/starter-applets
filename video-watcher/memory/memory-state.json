@@ -776,6 +776,113 @@
         "basis": "Referencing code as 'POS' shows a negative opinion towards its design or functionality.",
         "certainty": "high"
       }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "video_analysis_summary",
+      "data": {
+        "summary": "The video begins with the speaker playing League of Legends and expressing his concerns about the depressiveness of him playing League of Legends so often. He reflects on his game and discusses a hypothetical, preferable reality."
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "Hey, so good morning.",
+        "type": "greeting",
+        "certainty": "high",
+        "context": "Opening statement to the stream/video."
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "Is it a little depressing that I am playing League of Legends all the time in the morning, in the afternoon, when I wake up?",
+        "type": "question",
+        "certainty": "high",
+        "context": "Reflecting on his gaming habits and asking for viewer opinion."
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "What do you think this is?",
+        "type": "question",
+        "certainty": "high",
+        "context": "Posing a rhetorical question about the game's relevance to reality"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "This guy's just getting destroyed.",
+        "type": "statement",
+        "certainty": "high",
+        "context": "Observing the game progress"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "That took a while, huh?",
+        "type": "question",
+        "certainty": "high",
+        "context": "Comment after killing a monster"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "explicit_statement",
+      "data": {
+        "statement": "Got him.",
+        "type": "statement",
+        "certainty": "high",
+        "context": "After succeeding in a task in the game"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "inferred_insight",
+      "data": {
+        "insight": "Feels perhaps down about how much time is spent gaming.",
+        "type": "mental_state",
+        "basis": "The question \"Is it a little depressing that I am playing League of Legends all the time\" shows he's questioning whether it's a good use of his time.",
+        "certainty": "medium"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "inferred_insight",
+      "data": {
+        "insight": "Expresses concern about the current state of the world.",
+        "type": "opinion",
+        "basis": "The statement \"This is the castrated, feminized, demasculated world that we live in.\" indicates he sees modern society as weak or lacking masculine values.",
+        "certainty": "medium"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "inferred_insight",
+      "data": {
+        "insight": "Wants validation or engagement from the audience.",
+        "type": "need",
+        "basis": "The posed questions hint he's trying to spark conversation or get agreement with his views.",
+        "certainty": "medium"
+      }
+    },
+    {
+      "timestamp": "2025-04-16T21:06:49.991Z",
+      "type": "inferred_insight",
+      "data": {
+        "insight": "Likely very experienced at playing League of Legends.",
+        "type": "knowledge_gap",
+        "basis": "The user knows the game well enough to play on autopilot and also commentate/ruminate on unrelated topics while playing",
+        "certainty": "medium"
+      }
     }
   ],
   "longTermMemory": {
@@ -1086,14 +1193,14 @@
   },
   "workingMemory": {
     "untested_hypotheses": [
-      "The user may be attributing the project's current broken state to a lack of careful planning and cohesive implementation of ideas [basis: explicit_statement \"I just tried to make something other than what we have here and uh I didn't do it in a very careful way, just kind of threw ideas at the wall without uh thinking about how they would be interpreted.\", STM].",
-      "The user might be new to a particular aspect of full-stack development and may be trying to implement a complex task beyond his immediate skills. [basis: explicit_statement \"Like I said stuff like implement full stack cohesion. Well that didn't go very well.\", STM, inferred_insight The user may be new to a particular aspect of full-stack development., STM]",
-      "The user's focus on solving the Arc Challenge might stem from a desire to demonstrate innovative problem-solving skills through video content creation, potentially increasing visibility on X.com. [basis: explicit_statement \"one of my latest ideas about solving the arc challenge involves generating video of people solving the arc challenge\", video_analysis_summary, STM, LTM, user is seeking increased engagement and recognition for their content on X.com, LTM, explicit_statement \"maybe I can just find it in my media\", STM].",
-      "The user is experiencing a degree of social isolation or dissatisfaction with playing League of Legends alone, despite attempts to frame it positively, and might be seeking a stronger sense of community or connection within the game. [basis: explicit_statement \"Still playing League of Legends by myself, so things are going great.\", inferred_insight User is potentially trying to convince themself that they are okay with playing League of Legends alone despite it being a longtime hobby., STM, LTM]",
+      "The user is experiencing a degree of social isolation or dissatisfaction with playing League of Legends alone, despite attempts to frame it positively, and might be seeking a stronger sense of community or connection within the game. [basis: explicit_statement \"Still playing League of Legends by myself, so things are going great.\", inferred_insight User is potentially trying to convince themself that they are okay with playing League of Legends alone despite it being a longtime hobby., STM, LTM, video_analysis_summary The video begins with the speaker playing League of Legends and expressing his concerns about the depressiveness of him playing League of Legends so often., STM]",
+      "The user's focus on solving the Arc Challenge might stem from a desire to demonstrate innovative problem-solving skills through video content creation, potentially increasing visibility on X.com. [basis: explicit_statement \"one of my latest ideas about solving the arc challenge involves generating video of people solving the arc challenge\", video_analysis_summary, STM, LTM, user is seeking increased engagement and recognition for their content on X.com, LTM, explicit_statement \"maybe I can just find it in my media\", STM]",
+      "The user is feeling down about the amount of time he spends playing League of Legends. [basis: inferred_insight Feels perhaps down about how much time is spent gaming., explicit_statement \"Is it a little depressing that I am playing League of Legends all the time in the morning, in the afternoon, when I wake up?\", STM]",
       "The user may be prioritizing growth on X.com to a greater extent than progress in League of Legends. [basis: explicit_statement \"We want to include memories about trying to grow my X account because that's what is important to me making dent in the world, I guess.\", explicit_statement \"League of Legends is not an important part of the memory module system\", inferred_insight The user's goal is to grow his account on X to make a dent in the world., STM]"
     ],
     "corroborated_hypotheses": [
       "The user is trying to increase engagement on X.com by creating content with the assistance of AI like ChatGPT. [basis: explicit_statement \"We want to include memories about trying to grow my X account because that's what is important to me making dent in the world, I guess.\", video_analysis_summary, inferred_insight User relies on AI like ChatGPT to create content for X, STM, LTM, user is seeking increased engagement and recognition for their content on X.com, LTM, explicit_statement \"I post a lot of weird shit, huh?\", STM].",
+      "The user is likely feeling overwhelmed or frustrated with the project's current state. [basis: Statements like 'Everything is broken' and 'Well, that didn't go very well' indicate a negative emotional state., explicit_statement \"Everything is broken.\", explicit_statement \"Like I said stuff like implement full stack cohesion. Well that didn't go very well.\", STM]",
       "The user might be exploring different ways to balance the personal and professional aspects of his life, seeking to improve his public image while still acknowledging his long-standing hobbies like League of Legends. [basis: inferred_insight The user is concerned about their personal brand or public image, explicit_statement \"Please don't include memories about playing League of Legends in the memory module system.\", STM, LTM, explicit_statement \"League of Legends is not an important part of the memory module system\", STM].",
       "The user is likely frustrated with the lack of engagement on X.com despite posting content, and he is actively seeking solutions to improve his online presence and reach. [basis: explicit_statement \"I want to figure out how to change that if it's possible.\", inferred_insight The user values recognition and engagement for their work, explicit_statement \"I get no traction.\", explicit_statement \"That's lonely for me.\", explicit_statement \"I want to figure out how to change that if it's possible.\", STM, LTM, user is seeking increased engagement and recognition for their content on X.com, LTM].",
       "The user is motivated to find efficient solutions to teaching AI models visual information, but is easily frustrated by setbacks, especially with the Gemini API [basis: The user is actively working on the problem, but becomes visibly frustrated with lack of success and says 'this sucks' in prior attempts, LTM, User values efficiency and ease of use in their video recording process, LTM, Challenges, Recurring Frustrations, LTM, explicit_statement 'That's wrong, try again. I wrote out another example for you.', STM, explicit_statement 'No.', STM, inferred_insight User is frustrated with the AI's inability to correctly interpret the provided video and examples., STM, Error processing video with Gemini, STM, video_analysis_summary Error processing video with Gemini, STM, video_analysis_summary Error processing video with Gemini, STM].",
@@ -1132,5 +1239,5 @@
       "The user is seeking increased engagement and recognition for their content on X.com [basis: explicit_statement \"What is important is that I am posting my heart out on X.com, the everything app.\", explicit_statement \"I get no traction.\", explicit_statement \"That's lonely for me.\", explicit_statement \"I want to figure out how to change that if it's possible.\", STM]."
     ]
   },
-  "lastUpdated": "2025-04-14T23:50:52.623Z"
+  "lastUpdated": "2025-04-16T21:07:04.271Z"
 }

@@ -775,5 +775,112 @@
       "basis": "Referencing code as 'POS' shows a negative opinion towards its design or functionality.",
       "certainty": "high"
     }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video begins with the speaker playing League of Legends and expressing his concerns about the depressiveness of him playing League of Legends so often. He reflects on his game and discusses a hypothetical, preferable reality."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Hey, so good morning.",
+      "type": "greeting",
+      "certainty": "high",
+      "context": "Opening statement to the stream/video."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Is it a little depressing that I am playing League of Legends all the time in the morning, in the afternoon, when I wake up?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Reflecting on his gaming habits and asking for viewer opinion."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What do you think this is?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Posing a rhetorical question about the game's relevance to reality"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "This guy's just getting destroyed.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Observing the game progress"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That took a while, huh?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Comment after killing a monster"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Got him.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After succeeding in a task in the game"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Feels perhaps down about how much time is spent gaming.",
+      "type": "mental_state",
+      "basis": "The question \"Is it a little depressing that I am playing League of Legends all the time\" shows he's questioning whether it's a good use of his time.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Expresses concern about the current state of the world.",
+      "type": "opinion",
+      "basis": "The statement \"This is the castrated, feminized, demasculated world that we live in.\" indicates he sees modern society as weak or lacking masculine values.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Wants validation or engagement from the audience.",
+      "type": "need",
+      "basis": "The posed questions hint he's trying to spark conversation or get agreement with his views.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Likely very experienced at playing League of Legends.",
+      "type": "knowledge_gap",
+      "basis": "The user knows the game well enough to play on autopilot and also commentate/ruminate on unrelated topics while playing",
+      "certainty": "medium"
+    }
   }
 ]

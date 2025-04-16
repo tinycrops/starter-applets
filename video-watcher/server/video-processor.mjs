@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
+import { exec } from 'child_process';
 
 // Initialize Gemini AI - using the same approach as video folder project
 const key = process.env.VITE_GEMINI_API_KEY;
@@ -344,4 +345,25 @@ export async function saveToDataset(videoPath, analysisResult, datasetFolder) {
     console.error('Error saving to dataset:', error);
     throw new Error(`Failed to save to dataset: ${error.message}`);
   }
+}
+
+/**
+ * Generate a thumbnail at 5 seconds into the video using ffmpeg
+ * @param {string} videoPath - Path to the video file
+ * @param {string} thumbnailPath - Path to save the generated thumbnail image
+ * @returns {Promise<void>} Resolves when the thumbnail is created
+ */
+export function generateThumbnail(videoPath, thumbnailPath) {
+  return new Promise((resolve, reject) => {
+    // -ss 5 seeks to 5 seconds, -vframes 1 outputs one frame
+    const cmd = `ffmpeg -y -ss 5 -i "${videoPath}" -vframes 1 -vf "scale=320:-1" "${thumbnailPath}"`;
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error generating thumbnail:', error, stderr);
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
 } 
