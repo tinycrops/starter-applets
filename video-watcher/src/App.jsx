@@ -20,6 +20,10 @@ function App() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' for most recent, 'asc' for oldest
+  const VIDEOS_PER_PAGE = 12;
+
   // Fetch server status and videos on component mount
   useEffect(() => {
     async function fetchData() {
@@ -107,9 +111,26 @@ function App() {
   // Render a video card
   const VideoCard = ({ video }) => {
     const { id, videoFileName, processedAt, analysis } = video;
-    
+    // Construct the video URL (same as used in VideoDiscussion)
+    const videoUrl = `/videos/${encodeURIComponent(videoFileName)}`;
+    // Use the generated thumbnail as the poster
+    const thumbName = videoFileName.replace(/\.[^/.]+$/, '.jpg');
+    const posterUrl = `/thumbnails/${encodeURIComponent(thumbName)}`;
+    const fallbackPoster = "/video-placeholder.jpg";
+
     return (
       <div className="card">
+        <div className="video-thumbnail" style={{ width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '4px', overflow: 'hidden', marginBottom: '1rem' }}>
+          <video
+            src={videoUrl}
+            poster={posterUrl}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            controls={false}
+            tabIndex={-1}
+            preload="metadata"
+            onError={e => { e.target.poster = fallbackPoster; }}
+          />
+        </div>
         <h3>{videoFileName}</h3>
         <p><strong>Processed:</strong> {new Date(processedAt).toLocaleString()}</p>
         
@@ -178,6 +199,17 @@ function App() {
       </div>
     );
   };
+
+  // Sort and paginate videos
+  const sortedVideos = [...videos].sort((a, b) => {
+    if (sortOrder === 'desc') {
+      return new Date(b.processedAt) - new Date(a.processedAt);
+    } else {
+      return new Date(a.processedAt) - new Date(b.processedAt);
+    }
+  });
+  const totalPages = Math.ceil(sortedVideos.length / VIDEOS_PER_PAGE);
+  const paginatedVideos = sortedVideos.slice((currentPage - 1) * VIDEOS_PER_PAGE, currentPage * VIDEOS_PER_PAGE);
 
   if (loading && !status) {
     return <div className="container">Loading...</div>;
@@ -269,17 +301,30 @@ function App() {
       {activeTab === 'videos' && searchResults.length === 0 && (
         <div>
           <h2>Processed Videos ({videos.length})</h2>
-          
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <label htmlFor="sortOrder" style={{ marginRight: 8 }}>Sort by:</label>
+            <select id="sortOrder" value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}>
+              <option value="desc">Most Recent</option>
+              <option value="asc">Oldest First</option>
+            </select>
+          </div>
           {videos.length === 0 ? (
             <div className="card">
               <p>No videos have been processed yet. Record a video in OBS and save it to the watched folder.</p>
             </div>
           ) : (
-            <div className="video-list">
-              {videos.map(video => (
-                <VideoCard key={video.id} video={video} />
-              ))}
-            </div>
+            <>
+              <div className="video-list">
+                {paginatedVideos.map(video => (
+                  <VideoCard key={video.id} video={video} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</button>
+                <span style={{ margin: '0 12px' }}>Page {currentPage} of {totalPages}</span>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</button>
+              </div>
+            </>
           )}
         </div>
       )}

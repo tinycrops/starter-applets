@@ -5,7 +5,7 @@ import { createReadStream } from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
 import { fileURLToPath } from 'url';
-import { analyzeVideo, saveToDataset, genAI } from './video-processor.mjs';
+import { analyzeVideo, saveToDataset, genAI, generateThumbnail } from './video-processor.mjs';
 import memoryManager from './memory-manager.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,6 +13,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Configuration
 const WATCH_FOLDER = process.env.VIDEO_WATCH_FOLDER || 'Q:\\';
 const DATASET_FOLDER = process.env.VIDEO_DATASET_FOLDER || path.join(process.env.HOME || process.env.USERPROFILE, 'video-dataset');
+
+const THUMBNAIL_FOLDER = path.join(DATASET_FOLDER, 'thumbnails');
 
 // Keep track of processed videos to avoid reprocessing
 const processedVideos = new Set();
@@ -90,6 +92,42 @@ async function ensureDirectoryExists(directory) {
   }
 }
 
+// Ensure thumbnail folder exists
+async function ensureThumbnailFolder() {
+  await ensureDirectoryExists(THUMBNAIL_FOLDER);
+}
+
+// Check all videos for missing thumbnails and generate them if needed
+async function generateMissingThumbnails() {
+  await ensureThumbnailFolder();
+  const files = await fs.readdir(DATASET_FOLDER);
+  const videoFiles = files.filter(f => f.endsWith('.json'));
+  for (const jsonFile of videoFiles) {
+    try {
+      const data = JSON.parse(await fs.readFile(path.join(DATASET_FOLDER, jsonFile), 'utf-8'));
+      const videoFileName = data.videoFileName;
+      if (!videoFileName) continue;
+      const videoPath = path.join(WATCH_FOLDER, videoFileName);
+      const thumbName = path.parse(videoFileName).name + '.jpg';
+      const thumbPath = path.join(THUMBNAIL_FOLDER, thumbName);
+      try {
+        await fs.access(thumbPath);
+        // Thumbnail exists
+      } catch {
+        // Thumbnail missing, try to generate
+        try {
+          await generateThumbnail(videoPath, thumbPath);
+          console.log(`Generated missing thumbnail for ${videoFileName}`);
+        } catch (err) {
+          console.warn(`Could not generate thumbnail for ${videoFileName}:`, err.message);
+        }
+      }
+    } catch (err) {
+      console.warn(`Could not process dataset entry ${jsonFile}:`, err.message);
+    }
+  }
+}
+
 // Set up Express
 const app = express();
 app.use(express.json());
@@ -159,6 +197,12 @@ app.get('/api/process/:filename', async (req, res) => {
     
     // Mark as processed
     processedVideos.add(filename);
+    
+    // Generate thumbnail
+    await ensureThumbnailFolder();
+    const thumbName = path.parse(filename).name + '.jpg';
+    const thumbPath = path.join(THUMBNAIL_FOLDER, thumbName);
+    await generateThumbnail(filePath, thumbPath);
     
     res.json({ 
       success: true, 
@@ -242,6 +286,12 @@ async function scanForMissedVideos() {
                 // Mark as processed
                 processedVideos.add(videoFileName);
                 reprocessedCount++;
+                
+                // Generate thumbnail
+                await ensureThumbnailFolder();
+                const thumbName = path.parse(videoFileName).name + '.jpg';
+                const thumbPath = path.join(THUMBNAIL_FOLDER, thumbName);
+                await generateThumbnail(videoPath, thumbPath);
               } else {
                 console.log(`Failed video ${videoFileName} is still being written, will try again later.`);
               }
@@ -292,6 +342,12 @@ async function scanForMissedVideos() {
             
             // Mark as processed
             processedVideos.add(videoFile);
+            
+            // Generate thumbnail
+            await ensureThumbnailFolder();
+            const thumbName = path.parse(videoFile).name + '.jpg';
+            const thumbPath = path.join(THUMBNAIL_FOLDER, thumbName);
+            await generateThumbnail(filePath, thumbPath);
           } else {
             console.log(`Missed video ${videoFile} is still being written, will try again later.`);
           }
@@ -321,6 +377,14 @@ async function setupWatcher() {
   
   await ensureDirectoryExists(DATASET_FOLDER);
   await loadProcessedVideos();
+  await ensureThumbnailFolder();
+  // Run thumbnail generation in the background
+  console.log('Starting background thumbnail generation for missing thumbnails...');
+  generateMissingThumbnails().then(() => {
+    console.log('Background thumbnail generation complete.');
+  }).catch(err => {
+    console.warn('Background thumbnail generation failed:', err.message);
+  });
   
   // Scan for missed videos on startup
   await scanForMissedVideos();
@@ -376,6 +440,12 @@ async function setupWatcher() {
           
           // Mark as processed
           processedVideos.add(fileName);
+          
+          // Generate thumbnail
+          await ensureThumbnailFolder();
+          const thumbName = path.parse(fileName).name + '.jpg';
+          const thumbPath = path.join(THUMBNAIL_FOLDER, thumbName);
+          await generateThumbnail(filePath, thumbPath);
         } else {
           console.log(`File ${path.basename(filePath)} never stabilized, skipping processing`);
         }
@@ -746,6 +816,18 @@ app.get('/videos/:filename', async (req, res) => {
   } catch (error) {
     console.error('Error serving video:', error);
     res.status(500).send('Error serving video file');
+  }
+});
+
+// New endpoint to serve thumbnails
+app.get('/thumbnails/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const thumbnailPath = path.join(THUMBNAIL_FOLDER, filename);
+    await fs.access(thumbnailPath);
+    res.sendFile(thumbnailPath);
+  } catch (error) {
+    res.status(404).send('Thumbnail not found');
   }
 });
 

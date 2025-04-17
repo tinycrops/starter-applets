@@ -1,0 +1,886 @@
+[
+  {
+    "timestamp": "2025-04-12T01:21:35.354Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is comfortable using a code editor like Cursor and Visual Studio Code for development.",
+      "type": "workflow",
+      "basis": "The user is working within Cursor, and mentions using it with VS Code. The tabs open indicate working knowledge with both of these code editors.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:21:35.354Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is likely a moderately experienced programmer learning a new framework, but isn't afraid to ask \"what am I doing here\"",
+      "type": "mental_state",
+      "basis": "The user expressing they need to remember what they are doing, the user's code knowledge, and exploration with new technology.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:21:35.354Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user could benefit from high-level guides on how to deploy and use GitHub MCP servers with AI agents.",
+      "type": "need",
+      "basis": "The user is getting caught up in navigating documentation.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:25:28.598Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "Error processing video with Gemini"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The user is using Google AI Studio to analyze a video. He uploads a video and asks the AI \"What color is Tom?\""
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "explicit_directive",
+    "data": {
+      "command": "Upload File",
+      "target": "Gemini AI Studio",
+      "parameters": {},
+      "certainty": "high",
+      "context": "User clicks the '+' button then 'Upload File'"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "explicit_directive",
+    "data": {
+      "command": "Run",
+      "target": "Gemini AI Studio",
+      "parameters": {},
+      "certainty": "high",
+      "context": "Presses the 'Run' button after typing prompt"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user initially intended to upload a different video file but changed their mind, likely realizing it was not the correct one or not suitable for the current task.",
+      "type": "mental_state",
+      "basis": "The user opened the file explorer to upload a video, browsed through the list, paused, and audibly said \"Oh\" and then \"Okay\", before choosing a different video file.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is trying to extract specific information (color) from a video using Gemini AI Studio.",
+      "type": "goal",
+      "basis": "The user uploads a video and then asks 'what color is Tom?'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:38:48.570Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has some level of familiarity with Gemini AI Studio as they uploaded a video and wrote a prompt immediately after.",
+      "type": "knowledge_gap",
+      "basis": "User navigates the Gemini AI Studio interface efficiently, uploads a file, and types a request.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video is about the creator helping someone understand a drawing they made. They proceed to show an additional example to further help the viewer understand the concept."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, you were having a little trouble understanding what's going on on this drawing here, just from me drawing one example.",
+      "type": "assessment",
+      "certainty": "high",
+      "context": "Beginning of the video, explaining the purpose."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So, we're going to draw another example.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "States intention to create another drawing."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Now think carefully before you answer because this is very important, you know.",
+      "type": "instruction",
+      "certainty": "high",
+      "context": "Before proceeding with the task"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "It's very important.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Before proceeding with the task"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So look carefully, think carefully.",
+      "type": "instruction",
+      "certainty": "high",
+      "context": "Before proceeding with the task"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is creating examples or illustrations to help someone understand a concept or scenario.",
+      "type": "goal",
+      "basis": "The user says he's drawing examples to help someone understand something. The presence of a hand-drawn diagram at the start.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:39:33.515Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user believes that the task he is about to perform or the answer he is seeking is somehow critical, potentially related to the understanding or application of the concept being explained.",
+      "type": "mental_state",
+      "basis": "The user's repeated emphasis on the importance of thinking carefully and the overall importance of the task.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video shows someone using the Cursor IDE. The person clones a github repository. Once cloned, the user navigates the file system. Lastly, the user selects a different branch in the IDE terminal."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "So we want to get this thing started I guess.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "After examining the ReadMe, the user states their intent to start the project."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Only agents, I should have said.",
+      "type": "correction",
+      "certainty": "high",
+      "context": "After entering a git checkout command, the user corrects himself."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is familiar with git and uses it to switch branches within a project.",
+      "type": "workflow",
+      "basis": "The user enters 'git checkout agents-only' and seems comfortable with the command.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is using the Cursor IDE to work on an AI project.",
+      "type": "goal",
+      "basis": "The Cursor IDE is open and the user clones and opens a repository related to Anthropic AI agents.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is slightly unsure about the branch name, leading to the initial error and subsequent correction.",
+      "type": "knowledge_gap",
+      "basis": "He uses git checkout with 'agents' and then corrects himself to 'agents-only'.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:40:18.624Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has a clear idea of where they want to navigate within the project structure to start.",
+      "type": "goal",
+      "basis": "The user navigates the files after cloning and opening the repository.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "This video shows the presenter browsing the cursor.directory site which lists different models context protocols for LLMs. He then searches Bing and X/Twitter for \"mcp registry registry\", and checks out some sites before proceeding to the modelcontextprotocol.io site. He browses this site for a bit before going to the Glama site to inspect different MCP servers, in particular a geminithinking server, before concluding the video."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That's cool",
+      "type": "interest",
+      "certainty": "high",
+      "context": "Said after viewing a project listing on Mastra's showcase page."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Okay, here we go",
+      "type": "interest",
+      "certainty": "high",
+      "context": "Said before getting into the documentation for model context protocol."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What is Tavily?",
+      "type": "question",
+      "certainty": "high",
+      "context": "After seeing a Tavily listed as a model context protocol on Glama."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Got it",
+      "type": "interest",
+      "certainty": "high",
+      "context": "After seeing what Tavily is."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is investigating Model Context Protocol(MCP) to integrate in Claude AI",
+      "type": "goal",
+      "basis": "The user is reading the documation and researching tools associated with MCP.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is trying to find example servers using the Model Context Protocol",
+      "type": "goal",
+      "basis": "The user went to the model context protocol documentation and clicked example servers.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:41:27.582Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is investigating Glama AI",
+      "type": "goal",
+      "basis": "The user is looking at Glama in order to find out what an MCP server is",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The speaker expresses his desire for the AI not to incorporate information regarding the video game League of Legends from previous conversations into its memory. He then shifts focus to posting on X, and feels discouraged by the lack of traction on his posts. He considers engaging more with his followers in hopes of improving engagement and feeling less alone."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_directive",
+    "data": {
+      "command": "Do not include information about League of Legends in your memory.",
+      "target": "AI",
+      "parameters": {},
+      "certainty": "high",
+      "context": "User explicitly states that the information they have previously told the AI about League of Legends is not important and should not be included in its memory."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I don't want to be known as somebody who plays video games all the time.",
+      "type": "preference",
+      "certainty": "high",
+      "context": "The user expresses a desire to not be perceived as someone primarily associated with playing video games."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I was just saying stuff about those video games because I needed something to talk about, but that's not what's important.",
+      "type": "explanation",
+      "certainty": "high",
+      "context": "The user explains that the prior discussion of video games was merely to fill space during the recording."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What is important is that I am posting my heart out on X.com, the everything app.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user clarifies that their primary focus is on content creation on X.com."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I get no traction.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user expresses frustration about a lack of engagement with their content on X.com."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That's lonely for me.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user expresses a feeling of loneliness due to the lack of engagement."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I want to figure out how to change that if it's possible.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user expresses a goal to change the loneliness they feel."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is concerned about their personal brand or public image.",
+      "type": "mental_state",
+      "basis": "The user's explicit statement that they do not want to be known as someone who plays video games all the time indicates a concern about how they are perceived by others.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user values recognition and engagement for their work.",
+      "type": "goal",
+      "basis": "The user's expressed frustration about not getting 'traction' and feeling 'lonely' suggests that they seek validation and connection through their online content.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user may be experiencing a degree of social isolation or a lack of connection with their online audience.",
+      "type": "mental_state",
+      "basis": "The user's statement about feeling 'lonely' and wanting to 'change that' points to a possible need for increased social interaction or a more engaged community.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is considering strategies for improving their engagement on social media.",
+      "type": "withheld_idea",
+      "basis": "The user's mention of potentially 'reaching out to these people' and 'following them back' suggests they are exploring different techniques for growing their audience and fostering interaction.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user seeks a greater sense of community and belonging through their online activities.",
+      "type": "need",
+      "basis": "The user's overall tone and expressions of loneliness imply a deeper desire for meaningful connections with others who share their interests.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T01:51:47.063Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is implicitly critical of the puzzle solving post because no one interacted with it.",
+      "type": "opinion",
+      "basis": "The user makes an explicit contrast between the puzzle the person solved and the lack of interaction.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video is of a man about to play a game of League of Legends. He's very excited, being that he has been playing since he was 21 years old, and now he's 35. Afterwards he opens X, formerly known as Twitter, to look at his notifications and any impressions his posts may have gathered. He ends with looking at a chat GPT creation. "
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_directive",
+    "data": {
+      "command": "Please don't include memories about playing League of Legends in the memory module system.",
+      "target": "memory module system",
+      "parameters": {},
+      "certainty": "high",
+      "context": "User explicitly asks the 'system' to exclude League of Legends memories"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "First League of Legends game of the day",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Beginning of the video, before starting the game"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I'm ecstatic. I'm absolutely just overjoyed to be playing League of Legends again for the very hundred millionth time since I was 21 years old. I'm 35 now.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Expressing enthusiasm but also indicating long-term, perhaps slightly resigned, involvement."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Still playing League of Legends by myself, so things are going great.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After stating his age and length of playing, he states he still plays by himself."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "League of Legends is not an important part of the memory module system",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After stating his age and length of playing, he states that League of Legends is not important"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "We want to include memories about trying to grow my X account because that's what is important to me making dent in the world, I guess.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "States that they want to include memories about their X account."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I have done some posting today.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "States that they want to include memories about their X account."
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is potentially trying to convince themself that they are okay with playing League of Legends alone despite it being a longtime hobby. The enthusiasm seems somewhat forced and overdone, perhaps masking a feeling of loneliness or mild dissatisfaction.",
+      "type": "mental_state",
+      "basis": "The excessive use of positive adjectives and the slight pause before 'things are going great' suggest an attempt to convince oneself of a positive outlook. He explicitly points out that he is playing alone.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user's goal is to grow his account on X to make a dent in the world.",
+      "type": "goal",
+      "basis": "The user explicit states that they want to include memories about their X account because that's what is important to them.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is potentially exploring the 'Notifications', 'Bookmarks' and 'Profile' pages on X.",
+      "type": "workflow",
+      "basis": "The user briefly explores the listed items on the X website.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User is reflecting on content creation and impressions on X",
+      "type": "workflow",
+      "basis": "Navigating to the profile and viewing analytics suggests an awareness of metrics and content performance.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-12T21:57:33.870Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "User relies on AI like ChatGPT to create content for X",
+      "type": "workflow",
+      "basis": "The user navigates to their own post which includes a comic created by ChatGPT",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video shows a person discussing their ideas on how to solve the Arc Challenge by generating videos of people solving the Arc Challenge. They then navigate to their Twitter profile, specifically the media section, to locate an image to use. They search for a specific leaf image. After finding the leaf, they search for an image of a single leaf using the Bing search engine, then navigates to a GitHub repository called \"starter-applets\"."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "one of my latest ideas about solving the arc challenge involves generating video of people solving the arc challenge",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Explaining the idea to solve the ARC challenge."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "maybe I can just find it in my media",
+      "type": "goal",
+      "certainty": "high",
+      "context": "Looking for a post from his X profile."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I post a lot of weird shit, huh?",
+      "type": "opinion",
+      "certainty": "high",
+      "context": "While scrolling through the media in X, after having already seen a lot of pictures, images and videos."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "You feel me?",
+      "type": "question",
+      "certainty": "high",
+      "context": "After laughing."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user seems to have a lot of tabs open",
+      "type": "workflow",
+      "basis": "There are lots of tabs open",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is not sure what someone is talking about",
+      "type": "knowledge_gap",
+      "basis": "The user said 'I don't know what this person's talking about.'",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user might feel some frustration or slight discouragement when he couldn't find the leaf image",
+      "type": "mental_state",
+      "basis": "The user sighed in frustration when he couldn't find the leaf",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:34:28.113Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is very familiar with X",
+      "type": "workflow",
+      "basis": "The user scrolls very fast and knows how to navigate.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video shows a person working with a video processing application or system. They are discussing issues they encountered during a development task and checking to see if a component still works, describing it as a 'POS'. The person appears to be frustrated that 'everything is broken'"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "I just tried to make something other than what we have here and uh I didn't do it in a very careful way, just kind of threw ideas at the wall without uh thinking about how they would be interpreted.",
+      "type": "goal",
+      "certainty": "high",
+      "context": "The user is explaining what they tried to do and their methodology."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Like I said stuff like implement full stack cohesion. Well that didn't go very well.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "The user expresses frustration with a specific task, referring to the chat log."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Everything is broken.",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "User expressing general frustration with the state of the project."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What you gonna do though, you know?",
+      "type": "frustration",
+      "certainty": "high",
+      "context": "User is showing a sense of resignation towards the problem."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Just checking if this POS still works",
+      "type": "interest",
+      "certainty": "high",
+      "context": "The user is referring to some code as POS (piece of s**t) and is checking if it still works."
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is likely feeling overwhelmed or frustrated with the project's current state.",
+      "type": "mental_state",
+      "basis": "Statements like 'Everything is broken' and 'Well, that didn't go very well' indicate a negative emotional state.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user's workflow involves experimenting with ideas, then checking the resulting code to see if it works.",
+      "type": "workflow",
+      "basis": "The user mentions throwing ideas at the wall, then checking if the piece of code still works.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user may be new to a particular aspect of full-stack development.",
+      "type": "knowledge_gap",
+      "basis": "Statement 'implement full stack cohesion. Well, that didn't go very well' suggests they may be trying something they're not yet proficient at.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user is likely working on a personal project and wants to make progress quickly.",
+      "type": "goal",
+      "basis": "The user stated 'I didn't do it in a very careful way, just kind of threw ideas at the wall'.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-14T23:50:39.626Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "The user has a casual and slightly cynical view of some of the code they are working with.",
+      "type": "opinion",
+      "basis": "Referencing code as 'POS' shows a negative opinion towards its design or functionality.",
+      "certainty": "high"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "video_analysis_summary",
+    "data": {
+      "summary": "The video begins with the speaker playing League of Legends and expressing his concerns about the depressiveness of him playing League of Legends so often. He reflects on his game and discusses a hypothetical, preferable reality."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Hey, so good morning.",
+      "type": "greeting",
+      "certainty": "high",
+      "context": "Opening statement to the stream/video."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Is it a little depressing that I am playing League of Legends all the time in the morning, in the afternoon, when I wake up?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Reflecting on his gaming habits and asking for viewer opinion."
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "What do you think this is?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Posing a rhetorical question about the game's relevance to reality"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "This guy's just getting destroyed.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "Observing the game progress"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "That took a while, huh?",
+      "type": "question",
+      "certainty": "high",
+      "context": "Comment after killing a monster"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "explicit_statement",
+    "data": {
+      "statement": "Got him.",
+      "type": "statement",
+      "certainty": "high",
+      "context": "After succeeding in a task in the game"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Feels perhaps down about how much time is spent gaming.",
+      "type": "mental_state",
+      "basis": "The question \"Is it a little depressing that I am playing League of Legends all the time\" shows he's questioning whether it's a good use of his time.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Expresses concern about the current state of the world.",
+      "type": "opinion",
+      "basis": "The statement \"This is the castrated, feminized, demasculated world that we live in.\" indicates he sees modern society as weak or lacking masculine values.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Wants validation or engagement from the audience.",
+      "type": "need",
+      "basis": "The posed questions hint he's trying to spark conversation or get agreement with his views.",
+      "certainty": "medium"
+    }
+  },
+  {
+    "timestamp": "2025-04-16T21:06:49.991Z",
+    "type": "inferred_insight",
+    "data": {
+      "insight": "Likely very experienced at playing League of Legends.",
+      "type": "knowledge_gap",
+      "basis": "The user knows the game well enough to play on autopilot and also commentate/ruminate on unrelated topics while playing",
+      "certainty": "medium"
+    }
+  }
+]
