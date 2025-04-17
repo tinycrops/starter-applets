@@ -1,3 +1,5 @@
+![Generated Image](./Generated%20Image%20April%2015%2C%202025%20-%205_38PM.jpeg)
+
 Look at this video for an explaination of the Short Term Memory, Long Term Memory Working Memory query feature https://x.com/tinycrops/status/1910105664589799515
 
 # Video Watcher - Gemini Dataset Builder

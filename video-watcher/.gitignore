@@ -3,6 +3,8 @@ node_modules/
 .pnp
 .pnp.js
 
+memory/*.json
+
 # Environment variables
 .env
 .env.local
